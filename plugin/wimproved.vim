@@ -25,13 +25,13 @@ if !has('win32') && !has('win64')
 endif
 
 if exists('g:loaded_wimproved') || &compatible
-    finish
+    " finish
 else
     let g:loaded_wimproved = 1
 endif
 
-let g:vfw_dllpath = expand('%:p') . "/../../Build/vim-fullscreen-windows.dll"
-echom g:vfw_dllpath
+let g:vfw_basepath = fnamemodify(resolve(expand('<sfile>:p')), ':h')
+let g:vfw_dllpath = g:vfw_basepath . "/../Build/vim-fullscreen-windows.dll"
 function! RestoreEdge()
     echo libcallnr(g:vfw_dllpath, "restore_edge", 0)
 endfunction
@@ -48,9 +48,15 @@ function! RemoveTitlebar()
     echo libcallnr(g:vfw_dllpath, "remove_titlebar", 0)
 endfunction
 
-nnoremap <Leader>b :call RemoveEdge()<ENTER>
-nnoremap <Leader>n :call RestoreEdge()<ENTER>
+let g:vfw_clean_window_style = 0
+function! ToggleCleanWindowStyle()
+    if !g:vfw_clean_window_style
+        call RemoveEdge()
+    else
+        call RestoreEdge()
+    endif
+    let g:vfw_clean_window_style = !g:vfw_clean_window_style
+endfunction
 
-nnoremap <Leader>g :call RemoveTitlebar()<ENTER>
-nnoremap <Leader>h :call RestoreTitlebar()<ENTER>
+command! ToggleCleanWindowStyle :call ToggleCleanWindowStyle()
 

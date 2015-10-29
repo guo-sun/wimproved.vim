@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2015 Killian Koenig
+Copyright (c) 2016 Killian Koenig
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -123,33 +123,55 @@ __declspec(dllexport) int restore_titlebar(long arg)
     return 1;
 }
 
+static void add_style_flags(HWND hwnd, long flags)
+{
+    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+    SetWindowLong(hwnd, GWL_STYLE, style |= flags);
+}
+
+static void remove_style_flags(HWND hwnd, long flags)
+{
+    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+    SetWindowLong(hwnd, GWL_STYLE, style &= ~flags);
+}
+
+static void add_exstyle_flags(HWND hwnd, long flags)
+{
+    DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    SetWindowLong(hwnd, GWL_EXSTYLE, style |= flags);
+}
+
+static void remove_exstyle_flags(HWND hwnd, long flags)
+{
+    DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    SetWindowLong(hwnd, GWL_EXSTYLE, style &= ~flags);
+}
+
 __declspec(dllexport) int remove_edge(long arg)
 {
-    HWND hwnd = get_textarea_hwnd();
-    if (!hwnd)
-    {
-        return 0;
-    }
+    HWND child = get_textarea_hwnd();
+    HWND parent = get_hwnd();
+    HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush);
+    SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush);
 
-    DWORD ex_style = GetWindowLong(hwnd, GWL_EXSTYLE);
-    ex_style &= ~(WS_EX_CLIENTEDGE | WS_EX_WINDOWEDGE);
-    SetWindowLong(hwnd, GWL_EXSTYLE, ex_style);
-    force_redraw(hwnd);
+    remove_exstyle_flags(child, WS_EX_CLIENTEDGE);
 
-    return 1;
+    force_redraw(child);
+    return 0;
 }
 
 __declspec(dllexport) int restore_edge(long arg)
 {
-    HWND hwnd = get_textarea_hwnd();
-    if (hwnd)
-    {
-        DWORD ex_style = GetWindowLong(hwnd, GWL_EXSTYLE);
-        ex_style |= WS_EX_CLIENTEDGE | WS_EX_WINDOWEDGE;
-        SetWindowLong(hwnd, GWL_EXSTYLE, ex_style);
-        force_redraw(hwnd);
-    }
+    HWND child = get_textarea_hwnd();
+    HWND parent = get_hwnd();
+    HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush);
+    SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush);
 
-    return 1;
+    add_exstyle_flags(child, WS_EX_CLIENTEDGE);
+
+    force_redraw(child);
+    return 0;
 }
 
