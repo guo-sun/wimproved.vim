@@ -1,3 +1,3 @@
-# vim-fullscreen-windows
+# wimproved.vim
 A better gvim experience for Windows.
 
