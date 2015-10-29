@@ -1,4 +1,4 @@
 cmake_minimum_required (VERSION 2.8.7)
-project (vim-fullscreen-windows)
+project (wimproved)
 
-add_library (vim-fullscreen-windows SHARED plugin.c)
+add_library (wimproved SHARED plugin.c)

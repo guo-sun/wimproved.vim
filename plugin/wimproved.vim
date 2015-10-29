@@ -19,18 +19,18 @@
 " LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 " OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 " THE SOFTWARE.
-
-if !has('win32') && !has('win64')
-    finish
-endif
-
 if exists('g:loaded_wimproved') || &compatible
     finish
 else
     let g:loaded_wimproved = 1
 endif
 
-let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . "/../Build/vim-fullscreen-windows.dll"
+if !has('win32') && !has('win64')
+    command! ToggleWimprovedClean :
+    finish
+endif
+
+let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . "/../Build/wimproved.dll"
 
 function! GetBackgroundColor()
     let l:s = synIDattr(hlID('Normal'), 'bg#')
@@ -42,7 +42,7 @@ function! GetBackgroundColor()
 endfunction
 
 let s:clean_window_style_on = 0
-function! ToggleCleanWindowStyle()
+function! wimproved#toggle_clean()
     let l:bgcolor = GetBackgroundColor()
     if !s:clean_window_style_on
         call libcallnr(s:dll_path, "remove_edge", l:bgcolor)
@@ -52,5 +52,5 @@ function! ToggleCleanWindowStyle()
     let s:clean_window_style_on = !s:clean_window_style_on
 endfunction
 
-command! ToggleCleanWindowStyle :call ToggleCleanWindowStyle()
+command! ToggleWimprovedClean :call wimproved#toggle_clean()
 
