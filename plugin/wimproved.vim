@@ -25,37 +25,31 @@ if !has('win32') && !has('win64')
 endif
 
 if exists('g:loaded_wimproved') || &compatible
-    " finish
+    finish
 else
     let g:loaded_wimproved = 1
 endif
 
-let g:vfw_basepath = fnamemodify(resolve(expand('<sfile>:p')), ':h')
-let g:vfw_dllpath = g:vfw_basepath . "/../Build/vim-fullscreen-windows.dll"
-function! RestoreEdge()
-    echo libcallnr(g:vfw_dllpath, "restore_edge", 0)
-endfunction
+let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . "/../Build/vim-fullscreen-windows.dll"
 
-function! RemoveEdge()
-    echo libcallnr(g:vfw_dllpath, "remove_edge", 0)
-endfunction
-
-function! RestoreTitlebar()
-    echo libcallnr(g:vfw_dllpath, "restore_titlebar", 0)
-endfunction
-
-function! RemoveTitlebar()
-    echo libcallnr(g:vfw_dllpath, "remove_titlebar", 0)
-endfunction
-
-let g:vfw_clean_window_style = 0
-function! ToggleCleanWindowStyle()
-    if !g:vfw_clean_window_style
-        call RemoveEdge()
-    else
-        call RestoreEdge()
+function! GetBackgroundColor()
+    let l:s = synIDattr(hlID('Normal'), 'bg#')
+    if !len(l:s)
+        return 0
     endif
-    let g:vfw_clean_window_style = !g:vfw_clean_window_style
+
+    return str2nr(strpart(l:s, 1), 16) " Skip over the #
+endfunction
+
+let s:clean_window_style_on = 0
+function! ToggleCleanWindowStyle()
+    let l:bgcolor = GetBackgroundColor()
+    if !s:clean_window_style_on
+        call libcallnr(s:dll_path, "remove_edge", l:bgcolor)
+    else
+        call libcallnr(s:dll_path, "restore_edge", l:bgcolor)
+    endif
+    let s:clean_window_style_on = !s:clean_window_style_on
 endfunction
 
 command! ToggleCleanWindowStyle :call ToggleCleanWindowStyle()

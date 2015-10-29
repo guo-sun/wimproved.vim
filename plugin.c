@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2016 Killian Koenig
+Copyright (c) 2015 Killian Koenig
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -149,29 +149,43 @@ static void remove_exstyle_flags(HWND hwnd, long flags)
 
 __declspec(dllexport) int remove_edge(long arg)
 {
+    /* TODO : Don't leak brush */
+    HBRUSH brush = CreateSolidBrush(RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF));
+    if (!brush) { return 0; };
+
     HWND child = get_textarea_hwnd();
-    HWND parent = get_hwnd();
-    HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    if (!child) { return 0; };
     SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush);
+
+    HWND parent = get_hwnd();
+    if (!parent) { return 0; };
     SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush);
 
     remove_exstyle_flags(child, WS_EX_CLIENTEDGE);
 
     force_redraw(child);
-    return 0;
+
+    return 1;
 }
 
 __declspec(dllexport) int restore_edge(long arg)
 {
+    /* TODO : Don't leak brush */
+    HBRUSH brush = CreateSolidBrush(RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF));
+    if (!brush) { return 0; };
+
     HWND child = get_textarea_hwnd();
-    HWND parent = get_hwnd();
-    HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    if (!child) { return 0; };
     SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush);
+
+    HWND parent = get_hwnd();
+    if (!parent) { return 0; };
     SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush);
 
     add_exstyle_flags(child, WS_EX_CLIENTEDGE);
 
     force_redraw(child);
-    return 0;
+
+    return 1;
 }
 
