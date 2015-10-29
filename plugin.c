@@ -87,9 +87,17 @@ __declspec(dllexport) int remove_titlebar(long arg)
         return 0;
     }
 
+    /* Set the clear color before resizing to avoid seeing any white borders */
+    HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)brush);
+
     DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-    style &= ~WS_CAPTION;
+    style &= ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
     SetWindowLong(hwnd, GWL_STYLE, style);
+
+    DWORD ex_style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    ex_style &= ~(WS_EX_WINDOWEDGE);
+    SetWindowLong(hwnd, GWL_EXSTYLE, ex_style);
     force_redraw(hwnd);
 
     return 1;
@@ -104,8 +112,12 @@ __declspec(dllexport) int restore_titlebar(long arg)
     }
 
     DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-    style |= WS_CAPTION;
+    style |= WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
     SetWindowLong(hwnd, GWL_STYLE, style);
+
+    DWORD ex_style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    ex_style |= WS_EX_WINDOWEDGE;
+    SetWindowLong(hwnd, GWL_EXSTYLE, ex_style);
     force_redraw(hwnd);
 
     return 1;
