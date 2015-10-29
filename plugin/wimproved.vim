@@ -20,10 +20,14 @@
 " OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 " THE SOFTWARE.
 
-if exists('g:loaded_fullscreen_windows') || &compatible
-"    finish
+if !has('win32') && !has('win64')
+    finish
+endif
+
+if exists('g:loaded_wimproved') || &compatible
+    finish
 else
-    let g:loaded_fullscreen_windows = 1
+    let g:loaded_wimproved = 1
 endif
 
 let g:vfw_dllpath = expand('%:p') . "/../../Build/vim-fullscreen-windows.dll"
@@ -49,6 +53,4 @@ nnoremap <Leader>n :call RestoreEdge()<ENTER>
 
 nnoremap <Leader>g :call RemoveTitlebar()<ENTER>
 nnoremap <Leader>h :call RestoreTitlebar()<ENTER>
-
-echo "Reloaded!"
 
