@@ -1,4 +1,4 @@
-# wimproved.vim
+# ~ work in progress ~
 A better gvim experience for Windows.
 
 Default gVim window style             |  gVim with Wimproved
