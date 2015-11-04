@@ -1,6 +1,8 @@
 # ~ work in progress ~
 A better Vim experience for Windows.
 
+## License
+This software is released under the MIT License, see LICENSE.
 Commands
 -----
 - `:WCenter`
