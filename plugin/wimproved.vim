@@ -19,10 +19,10 @@
 " LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 " OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 " THE SOFTWARE.
-if exists('g:loaded_wimproved') || &compatible
-    " finish
+if exists('g:loaded_wimproved_plugin') || &compatible
+    finish
 else
-    let g:loaded_wimproved = 1
+    let g:loaded_wimproved_plugin = 1
 endif
 
 if !has('win32') && !has('win64')
@@ -30,34 +30,6 @@ if !has('win32') && !has('win64')
     finish
 endif
 
-let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . "/../Build/wimproved.dll"
-
-function! GetBackgroundColor()
-    let l:s = synIDattr(hlID('Normal'), 'bg#')
-    if !len(l:s)
-        return 0
-    endif
-
-    return str2nr(strpart(l:s, 1), 16) " Skip over the #
-endfunction
-
-let s:clean_window_style_on = 0
-function! wimproved#toggle_clean()
-    let bgcolor = GetBackgroundColor()
-    if !s:clean_window_style_on
-        echo libcallnr(s:dll_path, "set_window_style_clean", bgcolor)
-    else
-        echo libcallnr(s:dll_path, "set_window_style_default", bgcolor)
-    endif
-    let s:clean_window_style_on = !s:clean_window_style_on
-endfunction
-
-
-function! wimproved#set_alpha(alpha)
-    echo libcallnr(s:dll_path, "set_alpha", str2nr(a:alpha))
-endfunction
-
-command! ToggleWimprovedClean call wimproved#toggle_clean()
-
-command! -nargs=1 WSetAlpha call wimproved#set_alpha(<f-args>)
+command! -nargs=1 WSetAlpha    call wimproved#set_alpha(<f-args>)
+command! -nargs=0 WToggleClean call wimproved#toggle_clean()
 

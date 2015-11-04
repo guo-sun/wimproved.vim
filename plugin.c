@@ -86,12 +86,20 @@ static int adjust_exstyle_flags(HWND hwnd, long flags, int predicate)
     DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
     ASSERT_TRUE(style || !GetLastError());
 
+    if (predicate)
+    {
+        style |= flags;
+    }
+    else
+    {
+        style &= ~flags;
+    }
+
     /* Error code for SetWindowLong is ambiguous see:
      * https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx */
     SetLastError(0);
     ASSERT_TRUE(
-        SetWindowLong(hwnd, GWL_EXSTYLE, style ^ (-!!predicate ^ style) & flags)
-        || !GetLastError());
+        SetWindowLong(hwnd, GWL_EXSTYLE, style) || !GetLastError());
 
     return 1;
 
@@ -173,23 +181,11 @@ static void remove_style_flags(HWND hwnd, long flags)
     SetWindowLong(hwnd, GWL_STYLE, style &= ~flags);
 }
 
-static void add_exstyle_flags(HWND hwnd, long flags)
-{
-    DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
-    SetWindowLong(hwnd, GWL_EXSTYLE, style |= flags);
-}
-
-static void remove_exstyle_flags(HWND hwnd, long flags)
-{
-    DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
-    SetWindowLong(hwnd, GWL_EXSTYLE, style &= ~flags);
-}
-
 static int set_window_style(int is_clean_enabled, int arg)
 {
     /* TODO : Don't leak brush */
     HBRUSH brush;
-    ASSERT_TRUE((brush = CreateSolidBrush(RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF))));
+    ASSERT_TRUE(brush = CreateSolidBrush(RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF)));
 
     HWND child;
     ASSERT_TRUE(child = get_textarea_hwnd());
