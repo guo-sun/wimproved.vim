@@ -26,7 +26,7 @@ else
 endif
 
 if !has('win32') && !has('win64')
-    command! ToggleWimprovedClean :
+    command! WToggleClean :
     finish
 endif
 

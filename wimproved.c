@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include "Windows.h"
 #include "stdio.h"
 
-#define ASSERT_TRUE(condition) do { int value = !(condition);  if (value) { display_error(#condition, __LINE__, __FILE__); goto error; } } while(0, 0)
+#define EXPECT(condition) do { int value = !(condition);  if (value) { display_error(#condition, __LINE__, __FILE__); goto error; } } while(0, 0)
 
 static void display_error(const char* error, int line, const char* file)
 {
@@ -101,7 +101,7 @@ static int force_redraw(HWND hwnd)
 static int adjust_exstyle_flags(HWND hwnd, long flags, int predicate)
 {
     DWORD style = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-    ASSERT_TRUE(style || !GetLastError());
+    EXPECT(style || !GetLastError());
 
     if (!predicate)
     {
@@ -115,11 +115,11 @@ static int adjust_exstyle_flags(HWND hwnd, long flags, int predicate)
     /* Error code for SetWindowLong is ambiguous see:
      * https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx */
     SetLastError(0);
-    ASSERT_TRUE(GetLastError() == 0);
+    EXPECT(GetLastError() == 0);
 
     /* TODO : Windows 10 this appears to leak error state */
     SetWindowLongPtr(hwnd, GWL_EXSTYLE, style);
-    /* ASSERT_TRUE(
+    /* EXPECT(
       SetWindowLongPtr(hwnd, GWL_EXSTYLE, style) || !GetLastError()); */
 
     return 1;
@@ -131,7 +131,7 @@ error:
 static int adjust_style_flags(HWND hwnd, long flags, int predicate)
 {
     DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
-    ASSERT_TRUE(style || !GetLastError());
+    EXPECT(style || !GetLastError());
 
     if (!predicate)
     {
@@ -145,8 +145,50 @@ static int adjust_style_flags(HWND hwnd, long flags, int predicate)
     /* Error code for SetWindowLong is ambiguous see:
      * https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx */
     SetLastError(0);
-    ASSERT_TRUE(
+    EXPECT(
         SetWindowLongPtr(hwnd, GWL_STYLE, style) || !GetLastError());
+
+    return 1;
+
+error:
+    return 0;
+}
+
+static int set_window_style(int is_clean_enabled, int arg)
+{
+    /* TODO : Don't leak brush */
+    HBRUSH brush;
+    COLORREF color = RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF);
+    EXPECT((brush = CreateSolidBrush(color)) != NULL);
+
+    HWND child;
+    EXPECT((child = get_textarea_hwnd()) != NULL);
+
+    EXPECT(SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush) || !GetLastError());
+
+    HWND parent;
+    EXPECT((parent = get_hwnd()) != NULL);
+    EXPECT(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush) || !GetLastError());
+
+    EXPECT(adjust_exstyle_flags(child, WS_EX_CLIENTEDGE, is_clean_enabled));
+    EXPECT(force_redraw(child));
+
+    return 1;
+
+error:
+    return 0;
+
+}
+
+static int set_fullscreen(int should_be_fullscreen, int color)
+{
+    HWND parent;
+    EXPECT((parent = get_hwnd()) != NULL);
+
+    set_window_style(should_be_fullscreen, color);
+    adjust_style_flags(parent, WS_CAPTION |  WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, should_be_fullscreen);
+
+    force_redraw(parent);
 
     return 1;
 
@@ -160,53 +202,11 @@ __declspec(dllexport) int set_alpha(long arg)
     arg = max(arg, 0x00);
 
     HWND hwnd;
-    ASSERT_TRUE((hwnd = get_hwnd()) != NULL);
+    EXPECT((hwnd = get_hwnd()) != NULL);
 
     /* WS_EX_LAYERED must be set if there is any transparency */
-    ASSERT_TRUE(adjust_exstyle_flags(hwnd, WS_EX_LAYERED, arg != 0xFF));
-    ASSERT_TRUE(SetLayeredWindowAttributes(hwnd, 0, (BYTE)(arg), LWA_ALPHA));
-
-    return 1;
-
-error:
-    return 0;
-}
-
-static int set_window_style(int is_clean_enabled, int arg)
-{
-    /* TODO : Don't leak brush */
-    HBRUSH brush;
-    COLORREF color = RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF);
-    ASSERT_TRUE((brush = CreateSolidBrush(color)) != NULL);
-
-    HWND child;
-    ASSERT_TRUE((child = get_textarea_hwnd()) != NULL);
-
-    ASSERT_TRUE(SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush) || !GetLastError());
-
-    HWND parent;
-    ASSERT_TRUE((parent = get_hwnd()) != NULL);
-    ASSERT_TRUE(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush) || !GetLastError());
-
-    ASSERT_TRUE(adjust_exstyle_flags(child, WS_EX_CLIENTEDGE, is_clean_enabled));
-    ASSERT_TRUE(force_redraw(child));
-
-    return 1;
-
-error:
-    return 0;
-
-}
-
-static int set_fullscreen(int should_be_fullscreen, int color)
-{
-    HWND parent;
-    ASSERT_TRUE((parent = get_hwnd()) != NULL);
-
-    set_window_style(should_be_fullscreen, color);
-    adjust_style_flags(parent, WS_CAPTION |  WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, should_be_fullscreen);
-
-    force_redraw(parent);
+    EXPECT(adjust_exstyle_flags(hwnd, WS_EX_LAYERED, arg != 0xFF));
+    EXPECT(SetLayeredWindowAttributes(hwnd, 0, (BYTE)(arg), LWA_ALPHA));
 
     return 1;
 
