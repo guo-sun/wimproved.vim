@@ -213,9 +213,7 @@ static int set_fullscreen(int should_be_fullscreen, int color)
     HWND parent;
     EXPECT((parent = get_hwnd()) != NULL);
 
-    set_window_style(should_be_fullscreen, color);
     adjust_style_flags(parent, WS_CAPTION |  WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, should_be_fullscreen);
-
     force_redraw(parent);
 
     if (should_be_fullscreen)
@@ -233,6 +231,8 @@ static int set_fullscreen(int should_be_fullscreen, int color)
         RECT r = mi.rcMonitor;
         EXPECT(SetWindowPos(parent, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top, SWP_NOZORDER | SWP_NOACTIVATE));
     }
+
+    set_window_style(should_be_fullscreen, color);
 
     return 1;
 
