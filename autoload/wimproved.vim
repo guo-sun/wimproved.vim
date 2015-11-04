@@ -43,9 +43,9 @@ endfunction
 let s:clean_window_style_on = 0
 function! wimproved#toggle_clean()
     if !s:clean_window_style_on
-        call libcallnr(s:dll_path, "set_window_style_clean", s:get_background_color())
+        echo libcallnr(s:dll_path, "set_window_style_clean", s:get_background_color())
     else
-        call libcallnr(s:dll_path, "set_window_style_default", s:get_background_color())
+        echo libcallnr(s:dll_path, "set_window_style_default", s:get_background_color())
     endif
     let s:clean_window_style_on = !s:clean_window_style_on
 endfunction
