@@ -64,4 +64,4 @@ function! wimproved#toggle_fullscreen()
     let s:fullscreen_on = !s:fullscreen_on
 endfunction
 
-
+autocmd ColorScheme * call libcallnr(s:dll_path, 'update_window_brush', s:get_background_color())

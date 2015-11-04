@@ -154,21 +154,17 @@ error:
     return 0;
 }
 
+__declspec(dllexport) int update_window_brush(long arg);
+
 static int set_window_style(int is_clean_enabled, int arg)
 {
-    /* TODO : Don't leak brush */
-    HBRUSH brush;
-    COLORREF color = RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF);
-    EXPECT((brush = CreateSolidBrush(color)) != NULL);
+    EXPECT(update_window_brush(arg));
 
     HWND child;
     EXPECT((child = get_textarea_hwnd()) != NULL);
 
-    EXPECT(SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush) || !GetLastError());
-
     HWND parent;
     EXPECT((parent = get_hwnd()) != NULL);
-    EXPECT(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush) || !GetLastError());
 
     EXPECT(adjust_exstyle_flags(child, WS_EX_CLIENTEDGE, is_clean_enabled));
     EXPECT(force_redraw(child));
@@ -306,5 +302,30 @@ __declspec(dllexport) int set_window_style_clean(long arg)
 __declspec(dllexport) int set_window_style_default(long arg)
 {
     return set_window_style(0, arg);
+}
+
+__declspec(dllexport) int update_window_brush(long arg)
+{
+    /* TODO: Don't leak brush */
+    HBRUSH brush;
+    COLORREF color = RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF);
+    EXPECT((brush = CreateSolidBrush(color)) != NULL);
+
+    HWND child;
+    EXPECT((child = get_textarea_hwnd()) != NULL);
+
+    EXPECT(SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush) || !GetLastError());
+
+    HWND parent;
+    EXPECT((parent = get_hwnd()) != NULL);
+    EXPECT(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush) || !GetLastError());
+
+    EXPECT(RedrawWindow(parent, 0, 0, RDW_INVALIDATE));
+    EXPECT(force_redraw(parent));
+
+    return 1;
+
+error:
+    return 0;
 }
 
