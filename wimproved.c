@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include "Windows.h"
 #include "stdio.h"
 
-#define EXPECT(condition) do { int value = !(condition);  if (value) { display_error(#condition, __LINE__, __FILE__); goto error; } } while(0, 0)
+#define EXPECT(condition) do { int value = !(condition);  if (value) { display_error(#condition, __LINE__, __FILE__); goto error; } } while((void)0, 0)
 
 static void display_error(const char* error, int line, const char* file)
 {
@@ -256,6 +256,8 @@ error:
 
 __declspec(dllexport) int set_monitor_center(long arg)
 {
+    (void)arg;
+
     HWND hwnd;
     EXPECT((hwnd = get_hwnd()) != NULL);
 

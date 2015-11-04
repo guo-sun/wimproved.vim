@@ -25,7 +25,7 @@ else
     let g:loaded_wimproved = 1
 endif
 
-let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/../Build/wimproved.dll'
+let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/../wimproved.dll'
 
 function! s:get_background_color()
     let l:s = synIDattr(hlID('Normal'), 'bg#')
