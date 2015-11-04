@@ -214,6 +214,36 @@ error:
     return 0;
 }
 
+__declspec(dllexport) int set_monitor_center(long arg)
+{
+    HWND hwnd;
+    EXPECT((hwnd = get_hwnd()) != NULL);
+
+    RECT window;
+    EXPECT(GetWindowRect(hwnd, &window));
+
+    HMONITOR monitor;
+    EXPECT((monitor = MonitorFromRect(&window, MONITOR_DEFAULTTONEAREST)) != NULL);
+
+    MONITORINFO mi;
+    mi.cbSize = sizeof(mi);
+    EXPECT(GetMonitorInfo(monitor, &mi));
+
+    int w = window.right - window.left;
+    int h = window.bottom - window.top;
+    window.left = mi.rcMonitor.left + (mi.rcMonitor.right  - mi.rcMonitor.left - w) / 2;
+    window.top  = mi.rcMonitor.top  + (mi.rcMonitor.bottom - mi.rcMonitor.top  - h) / 2;
+    window.right  = window.left + w;
+    window.bottom = window.top  + h;
+
+    EXPECT(SetWindowPos(hwnd, NULL, window.left, window.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE));
+
+    return 1;
+
+error:
+    return 0;
+}
+
 __declspec(dllexport) int set_fullscreen_on(long arg)
 {
     return set_fullscreen(1, arg);

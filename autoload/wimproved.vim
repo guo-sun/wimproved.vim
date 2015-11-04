@@ -25,7 +25,7 @@ else
     let g:loaded_wimproved = 1
 endif
 
-let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . "/../Build/wimproved.dll"
+let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/../Build/wimproved.dll'
 
 function! s:get_background_color()
     let l:s = synIDattr(hlID('Normal'), 'bg#')
@@ -37,15 +37,19 @@ function! s:get_background_color()
 endfunction
 
 function! wimproved#set_alpha(alpha)
-    call libcallnr(s:dll_path, "set_alpha", str2nr(a:alpha))
+    call libcallnr(s:dll_path, 'set_alpha', str2nr(a:alpha))
+endfunction
+
+function! wimproved#set_monitor_center()
+    call libcallnr(s:dll_path, 'set_monitor_center', 0)
 endfunction
 
 let s:clean_window_style_on = 0
 function! wimproved#toggle_clean()
     if !s:clean_window_style_on
-        echo libcallnr(s:dll_path, "set_window_style_clean", s:get_background_color())
+        call libcallnr(s:dll_path, 'set_window_style_clean', s:get_background_color())
     else
-        echo libcallnr(s:dll_path, "set_window_style_default", s:get_background_color())
+        call libcallnr(s:dll_path, 'set_window_style_default', s:get_background_color())
     endif
     let s:clean_window_style_on = !s:clean_window_style_on
 endfunction
