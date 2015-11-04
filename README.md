@@ -3,6 +3,8 @@ A better Vim experience for Windows.
 
 Commands
 -----
+- `:WCenter`
+    - Center the window on the current monitor
 - `:WSetAlpha x`
     - Set window alpha [0, 255]
 - `:WToggleClean`
