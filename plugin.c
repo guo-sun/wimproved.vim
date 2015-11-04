@@ -79,6 +79,31 @@ static void force_redraw(HWND hwnd)
     SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOREPOSITION | SWP_NOSIZE);
 }
 
+#define ASSERT_TRUE(condition) do { int value = !(condition);  if (value) { goto error; } } while(0)
+
+__declspec(dllexport) int set_alpha(long arg)
+{
+    arg = min(arg, 0xFF);
+    arg = max(arg, 0x00);
+
+    HWND hwnd;
+    ASSERT_TRUE(hwnd = get_hwnd());
+
+    DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    /* Error code for SetWindowLong is ambiguous see:
+     * https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx */
+    SetLastError(0);
+    /* WS_EX_LAYERED should bet set if there is any transparency */
+    ASSERT_TRUE(SetWindowLong(hwnd, GWL_EXSTYLE, style ^ (-(arg != 0xFF) ^ style) & WS_EX_LAYERED) && !GetLastError());
+
+    ASSERT_TRUE(SetLayeredWindowAttributes(hwnd, 0, (BYTE)(arg), LWA_ALPHA));
+
+    return 1;
+
+error:
+    return 0;
+}
+
 __declspec(dllexport) int remove_titlebar(long arg)
 {
     HWND hwnd = get_hwnd();

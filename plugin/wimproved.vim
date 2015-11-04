@@ -20,7 +20,7 @@
 " OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 " THE SOFTWARE.
 if exists('g:loaded_wimproved') || &compatible
-    finish
+    " finish
 else
     let g:loaded_wimproved = 1
 endif
@@ -52,5 +52,12 @@ function! wimproved#toggle_clean()
     let s:clean_window_style_on = !s:clean_window_style_on
 endfunction
 
+
+function! wimproved#set_alpha(alpha)
+    echo libcallnr(s:dll_path, "set_alpha", str2nr(a:alpha))
+endfunction
+
 command! ToggleWimprovedClean :call wimproved#toggle_clean()
+
+command! -nargs=1 WSetAlpha call wimproved#set_alpha(<f-args>)
 
