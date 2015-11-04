@@ -245,7 +245,7 @@ __declspec(dllexport) int set_alpha(long arg)
     EXPECT((hwnd = get_hwnd()) != NULL);
 
     /* WS_EX_LAYERED must be set if there is any transparency */
-    EXPECT(adjust_exstyle_flags(hwnd, WS_EX_LAYERED, arg != 0xFF));
+    EXPECT(adjust_exstyle_flags(hwnd, WS_EX_LAYERED, arg == 0xFF));
     EXPECT(SetLayeredWindowAttributes(hwnd, 0, (BYTE)(arg), LWA_ALPHA));
 
     return 1;
