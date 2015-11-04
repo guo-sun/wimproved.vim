@@ -1,14 +1,12 @@
 # ~ work in progress ~
 A better Vim experience for Windows.
 
-
-
 Commands
 -----
 - `:WSetAlpha x`
     - Set window alpha [0, 255]
 - `:WToggleClean`
-    - Toggle cleaner window style
+    - Toggle clean window style
 - `:WToggleFullscreen`
     - Toggle fullscreen
 
