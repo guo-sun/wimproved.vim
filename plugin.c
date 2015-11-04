@@ -81,6 +81,24 @@ static void force_redraw(HWND hwnd)
 
 #define ASSERT_TRUE(condition) do { int value = !(condition);  if (value) { goto error; } } while(0)
 
+static int adjust_exstyle_flags(HWND hwnd, long flags, int predicate)
+{
+    DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    ASSERT_TRUE(style || !GetLastError());
+
+    /* Error code for SetWindowLong is ambiguous see:
+     * https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx */
+    SetLastError(0);
+    ASSERT_TRUE(
+        SetWindowLong(hwnd, GWL_EXSTYLE, style ^ (-!!predicate ^ style) & flags)
+        || !GetLastError());
+
+    return 1;
+
+error:
+    return 0;
+}
+
 __declspec(dllexport) int set_alpha(long arg)
 {
     arg = min(arg, 0xFF);
@@ -89,13 +107,8 @@ __declspec(dllexport) int set_alpha(long arg)
     HWND hwnd;
     ASSERT_TRUE(hwnd = get_hwnd());
 
-    DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
-    /* Error code for SetWindowLong is ambiguous see:
-     * https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx */
-    SetLastError(0);
-    /* WS_EX_LAYERED should bet set if there is any transparency */
-    ASSERT_TRUE(SetWindowLong(hwnd, GWL_EXSTYLE, style ^ (-(arg != 0xFF) ^ style) & WS_EX_LAYERED) && !GetLastError());
-
+    /* WS_EX_LAYERED must be set if there is any transparency */
+    ASSERT_TRUE(adjust_exstyle_flags(hwnd, WS_EX_LAYERED, arg != 0xFF));
     ASSERT_TRUE(SetLayeredWindowAttributes(hwnd, 0, (BYTE)(arg), LWA_ALPHA));
 
     return 1;
@@ -172,45 +185,38 @@ static void remove_exstyle_flags(HWND hwnd, long flags)
     SetWindowLong(hwnd, GWL_EXSTYLE, style &= ~flags);
 }
 
-__declspec(dllexport) int remove_edge(long arg)
+static int set_window_style(int is_clean_enabled, int arg)
 {
     /* TODO : Don't leak brush */
-    HBRUSH brush = CreateSolidBrush(RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF));
-    if (!brush) { return 0; };
+    HBRUSH brush;
+    ASSERT_TRUE((brush = CreateSolidBrush(RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF))));
 
-    HWND child = get_textarea_hwnd();
-    if (!child) { return 0; };
-    SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush);
+    HWND child;
+    ASSERT_TRUE(child = get_textarea_hwnd());
+    ASSERT_TRUE(SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush));
+    HWND parent;
+    ASSERT_TRUE(parent = get_hwnd());
+    ASSERT_TRUE(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush));
 
-    HWND parent = get_hwnd();
-    if (!parent) { return 0; };
-    SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush);
-
-    remove_exstyle_flags(child, WS_EX_CLIENTEDGE);
+    /* TODO : Check return value */
+    adjust_exstyle_flags(child, WS_EX_CLIENTEDGE, is_clean_enabled);
 
     force_redraw(child);
 
     return 1;
+
+error:
+    return 0;
+
 }
 
-__declspec(dllexport) int restore_edge(long arg)
+__declspec(dllexport) int set_window_style_clean(int arg)
 {
-    /* TODO : Don't leak brush */
-    HBRUSH brush = CreateSolidBrush(RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF));
-    if (!brush) { return 0; };
+    return set_window_style(1, arg);
+}
 
-    HWND child = get_textarea_hwnd();
-    if (!child) { return 0; };
-    SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush);
-
-    HWND parent = get_hwnd();
-    if (!parent) { return 0; };
-    SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush);
-
-    add_exstyle_flags(child, WS_EX_CLIENTEDGE);
-
-    force_redraw(child);
-
-    return 1;
+__declspec(dllexport) int set_window_style_default(int arg)
+{
+    return set_window_style(0, arg);
 }
 

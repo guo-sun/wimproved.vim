@@ -43,11 +43,11 @@ endfunction
 
 let s:clean_window_style_on = 0
 function! wimproved#toggle_clean()
-    let l:bgcolor = GetBackgroundColor()
+    let bgcolor = GetBackgroundColor()
     if !s:clean_window_style_on
-        call libcallnr(s:dll_path, "remove_edge", l:bgcolor)
+        echo libcallnr(s:dll_path, "set_window_style_clean", bgcolor)
     else
-        call libcallnr(s:dll_path, "restore_edge", l:bgcolor)
+        echo libcallnr(s:dll_path, "set_window_style_default", bgcolor)
     endif
     let s:clean_window_style_on = !s:clean_window_style_on
 endfunction
@@ -57,7 +57,7 @@ function! wimproved#set_alpha(alpha)
     echo libcallnr(s:dll_path, "set_alpha", str2nr(a:alpha))
 endfunction
 
-command! ToggleWimprovedClean :call wimproved#toggle_clean()
+command! ToggleWimprovedClean call wimproved#toggle_clean()
 
 command! -nargs=1 WSetAlpha call wimproved#set_alpha(<f-args>)
 
