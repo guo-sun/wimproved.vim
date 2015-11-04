@@ -1,4 +1,4 @@
 cmake_minimum_required (VERSION 2.8.7)
 project (wimproved)
 
-add_library (wimproved SHARED plugin.c)
+add_library (wimproved SHARED wimproved.c)
