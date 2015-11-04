@@ -50,3 +50,14 @@ function! wimproved#toggle_clean()
     let s:clean_window_style_on = !s:clean_window_style_on
 endfunction
 
+let s:fullscreen_on = 0
+function! wimproved#toggle_fullscreen()
+    if !s:fullscreen_on
+        call libcallnr(s:dll_path, 'set_fullscreen_on', s:get_background_color())
+    else
+        call libcallnr(s:dll_path, 'set_fullscreen_off', s:get_background_color())
+    endif
+    let s:fullscreen_on = !s:fullscreen_on
+endfunction
+
+

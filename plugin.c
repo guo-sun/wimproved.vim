@@ -107,6 +107,32 @@ error:
     return 0;
 }
 
+static int adjust_style_flags(HWND hwnd, long flags, int predicate)
+{
+    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+    ASSERT_TRUE(style || !GetLastError());
+
+    if (predicate)
+    {
+        style |= flags;
+    }
+    else
+    {
+        style &= ~flags;
+    }
+
+    /* Error code for SetWindowLong is ambiguous see:
+     * https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx */
+    SetLastError(0);
+    ASSERT_TRUE(
+        SetWindowLong(hwnd, GWL_STYLE, style) || !GetLastError());
+
+    return 1;
+
+error:
+    return 0;
+}
+
 __declspec(dllexport) int set_alpha(long arg)
 {
     arg = min(arg, 0xFF);
@@ -123,62 +149,6 @@ __declspec(dllexport) int set_alpha(long arg)
 
 error:
     return 0;
-}
-
-__declspec(dllexport) int remove_titlebar(long arg)
-{
-    HWND hwnd = get_hwnd();
-    if (!hwnd)
-    {
-        return 0;
-    }
-
-    /* Set the clear color before resizing to avoid seeing any white borders */
-    HBRUSH brush = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)brush);
-
-    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-    style &= ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX);
-    SetWindowLong(hwnd, GWL_STYLE, style);
-
-    DWORD ex_style = GetWindowLong(hwnd, GWL_EXSTYLE);
-    ex_style &= ~(WS_EX_WINDOWEDGE);
-    SetWindowLong(hwnd, GWL_EXSTYLE, ex_style);
-    force_redraw(hwnd);
-
-    return 1;
-}
-
-__declspec(dllexport) int restore_titlebar(long arg)
-{
-    HWND hwnd = get_hwnd();
-    if (!hwnd)
-    {
-        return 0;
-    }
-
-    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-    style |= WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
-    SetWindowLong(hwnd, GWL_STYLE, style);
-
-    DWORD ex_style = GetWindowLong(hwnd, GWL_EXSTYLE);
-    ex_style |= WS_EX_WINDOWEDGE;
-    SetWindowLong(hwnd, GWL_EXSTYLE, ex_style);
-    force_redraw(hwnd);
-
-    return 1;
-}
-
-static void add_style_flags(HWND hwnd, long flags)
-{
-    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-    SetWindowLong(hwnd, GWL_STYLE, style |= flags);
-}
-
-static void remove_style_flags(HWND hwnd, long flags)
-{
-    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-    SetWindowLong(hwnd, GWL_STYLE, style &= ~flags);
 }
 
 static int set_window_style(int is_clean_enabled, int arg)
@@ -206,12 +176,38 @@ error:
 
 }
 
-__declspec(dllexport) int set_window_style_clean(int arg)
+static int set_fullscreen(int should_be_fullscreen, int color)
+{
+    HWND parent;
+    ASSERT_TRUE(parent = get_hwnd());
+
+    set_window_style(should_be_fullscreen, color);
+    adjust_style_flags(parent, WS_CAPTION |  WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, should_be_fullscreen);
+
+    force_redraw(parent);
+
+    return 1;
+
+error:
+    return 0;
+}
+
+__declspec(dllexport) int set_fullscreen_on(long arg)
+{
+    return set_fullscreen(1, arg);
+}
+
+__declspec(dllexport) int set_fullscreen_off(long arg)
+{
+    return set_fullscreen(0, arg);
+}
+
+__declspec(dllexport) int set_window_style_clean(long arg)
 {
     return set_window_style(1, arg);
 }
 
-__declspec(dllexport) int set_window_style_default(int arg)
+__declspec(dllexport) int set_window_style_default(long arg)
 {
     return set_window_style(0, arg);
 }
