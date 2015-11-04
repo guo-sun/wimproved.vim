@@ -173,6 +173,34 @@ static int set_window_style(int is_clean_enabled, int arg)
     EXPECT(adjust_exstyle_flags(child, WS_EX_CLIENTEDGE, is_clean_enabled));
     EXPECT(force_redraw(child));
 
+    RECT parent_cr;
+    EXPECT(GetClientRect(parent, &parent_cr));
+
+    RECT child_wr;
+    EXPECT(GetWindowRect(child, &child_wr));
+
+    int w = child_wr.right - child_wr.left;
+    int h = child_wr.bottom - child_wr.top;
+    LONG left, top;
+    if (is_clean_enabled)
+    {
+        /* Center the text area window in the parent window client area */
+        left = (parent_cr.right  - parent_cr.left - w) / 2;
+        top  = (parent_cr.bottom - parent_cr.top  - h) / 2;
+
+        /* With WS_EX_CLIENTEDGE removed gVim will not fill the entire client area,
+         * but we can center it and hide this by using the same background color
+         * for both the parent and child window */
+        left += 2;
+        top  += 2;
+    }
+    else
+    {
+        left = top = 0;
+    }
+
+    EXPECT(SetWindowPos(child, NULL, left, top, w, h, SWP_NOZORDER | SWP_NOACTIVATE));
+
     return 1;
 
 error:
@@ -189,6 +217,22 @@ static int set_fullscreen(int should_be_fullscreen, int color)
     adjust_style_flags(parent, WS_CAPTION |  WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, should_be_fullscreen);
 
     force_redraw(parent);
+
+    if (should_be_fullscreen)
+    {
+        RECT window;
+        EXPECT(GetWindowRect(parent, &window));
+
+        HMONITOR monitor;
+        EXPECT((monitor = MonitorFromRect(&window, MONITOR_DEFAULTTONEAREST)) != NULL);
+
+        MONITORINFO mi;
+        mi.cbSize = sizeof(mi);
+        EXPECT(GetMonitorInfo(monitor, &mi));
+
+        RECT r = mi.rcMonitor;
+        EXPECT(SetWindowPos(parent, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top, SWP_NOZORDER | SWP_NOACTIVATE));
+    }
 
     return 1;
 
