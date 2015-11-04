@@ -23,6 +23,8 @@ THE SOFTWARE.
 */
 #include "Windows.h"
 
+#define ASSERT_TRUE(condition) do { int value = !(condition);  if (value) { goto error; } } while(0)
+
 static BOOL CALLBACK enum_windows_proc(
         _In_ HWND hwnd,
         _In_ LPARAM lparam)
@@ -78,8 +80,6 @@ static void force_redraw(HWND hwnd)
 {
     SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOREPOSITION | SWP_NOSIZE);
 }
-
-#define ASSERT_TRUE(condition) do { int value = !(condition);  if (value) { goto error; } } while(0)
 
 static int adjust_exstyle_flags(HWND hwnd, long flags, int predicate)
 {
