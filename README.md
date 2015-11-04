@@ -1,8 +1,6 @@
-# ~ work in progress ~
+# wimproved.vim
 A better Vim experience for Windows.
 
-## License
-This software is released under the MIT License, see LICENSE.
 Commands
 -----
 - `:WCenter`
@@ -14,9 +12,30 @@ Commands
 - `:WToggleFullscreen`
     - Toggle fullscreen
 
-WToggleClean
-----
+### Installation
+#### Pathogen - https://github.com/tpope/vim-pathogen
 
-Before |  After
-:-------------------------:|:-------------------------:
-![](https://cloud.githubusercontent.com/assets/1980353/10834298/74a32db4-7e55-11e5-85f7-3ff629ebf35f.png)  |  ![](https://cloud.githubusercontent.com/assets/1980353/10834314/926b3b70-7e55-11e5-837a-eb3cb8146702.png)
+    git clone https://github.com/kkoenig/wimproved.vim ~/.vim/bundle/wimproved.vim
+
+#### vim-plug - https://github.com/junegunn/vim-plug
+Add the following to your `.vimrc` and run `:PlugInstall`
+
+    Plug 'kkoenig/wimproved.vim'
+
+#### Vundle - https://github.com/gmarik/Vundle.vim
+Add the following to your `.vimrc` and run `:PluginInstall`
+
+    Plugin 'kkoenig/wimproved.vim'
+
+#### NeoBundle - https://github.com/Shougo/neobundle.vim
+Add the following to your `.vimrc` and run `:NeoBundleInstall`
+
+    NeoBundle 'kkoenig/wimproved.vim'
+
+
+### License
+
+This software is licensed under the [MIT license](http://en.wikipedia.org/wiki/MIT_License).
+© 2015 Killian Koenig &lt;<killiankoenig@gmail.com>&gt;.
+
+
