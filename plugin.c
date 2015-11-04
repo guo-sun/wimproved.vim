@@ -22,8 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "Windows.h"
+#include "stdio.h"
 
-#define ASSERT_TRUE(condition) do { int value = !(condition);  if (value) { goto error; } } while(0, 0)
+#define ASSERT_TRUE(condition) do { int value = !(condition);  if (value) { display_error(#condition, __LINE__, __FILE__); goto error; } } while(0, 0)
+
+static void display_error(const char* error, int line, const char* file)
+{
+    DWORD last_error = GetLastError();
+    char content[1024];
+    snprintf(content, sizeof(content), "%s(%d)\n%s", file, line, error);
+    MessageBoxA(NULL, content, "wimproved.vim", MB_ICONEXCLAMATION);
+    if (last_error)
+    {
+        char formatted[1024];
+        FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL, last_error, 0, formatted, sizeof(formatted), NULL);
+        snprintf(content, sizeof(content), "%s(%d)\n%s", file, line, formatted);
+        MessageBoxA(NULL, content, "wimproved.vim", MB_ICONEXCLAMATION);
+    }
+}
 
 static BOOL CALLBACK enum_windows_proc(
         _In_ HWND hwnd,
@@ -72,7 +89,7 @@ static HWND get_textarea_hwnd(void)
     }
 
     HWND child = NULL;
-    EnumChildWindows(hwnd, &enum_child_windows_proc, (LPARAM)&child);
+    (void)EnumChildWindows(hwnd, &enum_child_windows_proc, (LPARAM)&child);
     return child;
 }
 
@@ -83,10 +100,10 @@ static int force_redraw(HWND hwnd)
 
 static int adjust_exstyle_flags(HWND hwnd, long flags, int predicate)
 {
-    DWORD style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    DWORD style = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
     ASSERT_TRUE(style || !GetLastError());
 
-    if (predicate)
+    if (!predicate)
     {
         style |= flags;
     }
@@ -99,10 +116,11 @@ static int adjust_exstyle_flags(HWND hwnd, long flags, int predicate)
      * https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx */
     SetLastError(0);
     ASSERT_TRUE(GetLastError() == 0);
-    SetWindowLong(hwnd, GWL_EXSTYLE, style);
-    // TODO : Check error code here */
-    // ASSERT_TRUE(
-    //  SetWindowLong(hwnd, GWL_EXSTYLE, style) || GetLastError());
+
+    /* TODO : Windows 10 this appears to leak error state */
+    SetWindowLongPtr(hwnd, GWL_EXSTYLE, style);
+    /* ASSERT_TRUE(
+      SetWindowLongPtr(hwnd, GWL_EXSTYLE, style) || !GetLastError()); */
 
     return 1;
 
@@ -112,10 +130,10 @@ error:
 
 static int adjust_style_flags(HWND hwnd, long flags, int predicate)
 {
-    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+    DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
     ASSERT_TRUE(style || !GetLastError());
 
-    if (predicate)
+    if (!predicate)
     {
         style |= flags;
     }
@@ -128,7 +146,7 @@ static int adjust_style_flags(HWND hwnd, long flags, int predicate)
      * https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx */
     SetLastError(0);
     ASSERT_TRUE(
-        SetWindowLong(hwnd, GWL_STYLE, style) || !GetLastError());
+        SetWindowLongPtr(hwnd, GWL_STYLE, style) || !GetLastError());
 
     return 1;
 
