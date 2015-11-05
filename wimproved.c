@@ -26,21 +26,26 @@ THE SOFTWARE.
 
 #define EXPECT(condition) do { int value = !(condition);  if (value) { display_error(#condition, __LINE__, __FILE__); goto error; } } while((void)0, 0)
 
+/* #define VERBOSE_ERRORS */
+#if defined(VERBOSE_ERRORS)
 static void display_error(const char* error, int line, const char* file)
 {
     DWORD last_error = GetLastError();
-    char content[1024];
+    char content[MAX_PATH];
     snprintf(content, sizeof(content), "%s(%d)\n%s", file, line, error);
     MessageBoxA(NULL, content, "wimproved.vim", MB_ICONEXCLAMATION);
     if (last_error)
     {
-        char formatted[1024];
+        char formatted[MAX_PATH];
         FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                 NULL, last_error, 0, formatted, sizeof(formatted), NULL);
         snprintf(content, sizeof(content), "%s(%d)\n%s", file, line, formatted);
         MessageBoxA(NULL, content, "wimproved.vim", MB_ICONEXCLAMATION);
     }
 }
+#else
+#define display_error(error, line, file)
+#endif
 
 static BOOL CALLBACK enum_windows_proc(
         _In_ HWND hwnd,
