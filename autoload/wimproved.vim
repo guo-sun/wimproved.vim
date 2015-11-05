@@ -36,6 +36,30 @@ function! s:get_background_color()
     return str2nr(strpart(l:s, 1), 16) " Skip over the #
 endfunction
 
+let s:gui_options_override = 0
+let s:gui_options_cache = ''
+function s:set_allow_gui(allow_gui)
+    if !a:allow_gui
+        if !s:gui_options_override
+            let s:gui_options_cache=&guioptions
+
+            " Hide menu bar, tool bar, all scroll bars
+            set guioptions-=m
+            set guioptions-=T
+            set guioptions-=l
+            set guioptions-=L
+            set guioptions-=r
+            set guioptions-=R
+            let s:gui_options_override = 1
+        endif
+    else 
+        if s:gui_options_override
+            let &guioptions=s:gui_options_cache
+            let s:gui_options_override = 0
+        endif
+    endif
+endfunction
+
 function s:set_window_clean(is_clean)
     if a:is_clean
         call libcallnr(s:dll_path, 'set_window_style_clean', s:get_background_color())
@@ -70,6 +94,7 @@ function! wimproved#toggle_clean()
     endif
 
     call s:set_window_clean(s:clean_window_style_on)
+    call s:set_allow_gui(!s:fullscreen_on && !s:clean_window_style_on)
 endfunction
 
 let s:fullscreen_on = 0
@@ -81,6 +106,8 @@ function! wimproved#toggle_fullscreen()
     if !s:fullscreen_on
         call s:set_window_clean(s:clean_window_style_on)
     endif
+
+    call s:set_allow_gui(!s:fullscreen_on && !s:clean_window_style_on)
 endfunction
 
 autocmd ColorScheme * call libcallnr(s:dll_path, 'update_window_brush', s:get_background_color())
