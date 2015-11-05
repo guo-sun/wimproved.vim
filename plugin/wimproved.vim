@@ -30,7 +30,7 @@ if !has('win32') && !has('win64')
     finish
 endif
 
-command! -nargs=0 WCenter           call wimproved#set_monitor_center()
+command! -nargs=? WCenter           call wimproved#set_monitor_center(<f-args>)
 command! -nargs=1 WSetAlpha         call wimproved#set_alpha(<f-args>)
 command! -nargs=0 WToggleClean      call wimproved#toggle_clean()
 command! -nargs=0 WToggleFullscreen call wimproved#toggle_fullscreen()

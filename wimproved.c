@@ -256,7 +256,8 @@ error:
 
 __declspec(dllexport) int set_monitor_center(long arg)
 {
-    (void)arg;
+    arg = min(arg, 100);
+    arg = max(arg,   0);
 
     HWND hwnd;
     EXPECT((hwnd = get_hwnd()) != NULL);
@@ -271,14 +272,25 @@ __declspec(dllexport) int set_monitor_center(long arg)
     mi.cbSize = sizeof(mi);
     EXPECT(GetMonitorInfo(monitor, &mi));
 
-    int w = window.right - window.left;
-    int h = window.bottom - window.top;
+    int w, h;
+    if (arg != 0)
+    {
+        double scale = arg / 100.0;
+        w = scale * (mi.rcMonitor.right - mi.rcMonitor.left);
+        h = scale * (mi.rcMonitor.bottom - mi.rcMonitor.top);
+    }
+    else
+    {
+        w = window.right - window.left;
+        h = window.bottom - window.top;
+    }
+
     window.left = mi.rcMonitor.left + (mi.rcMonitor.right  - mi.rcMonitor.left - w) / 2;
     window.top  = mi.rcMonitor.top  + (mi.rcMonitor.bottom - mi.rcMonitor.top  - h) / 2;
     window.right  = window.left + w;
     window.bottom = window.top  + h;
 
-    EXPECT(SetWindowPos(hwnd, NULL, window.left, window.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE));
+    EXPECT(SetWindowPos(hwnd, NULL, window.left, window.top, w, h, SWP_NOZORDER | SWP_NOACTIVATE));
 
     return 1;
 

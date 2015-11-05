@@ -27,7 +27,7 @@ endif
 
 let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/../wimproved.dll'
 
-function! s:get_background_color()
+function! s:get_background_color() abort
     let l:s = synIDattr(hlID('Normal'), 'bg#')
     if !len(l:s)
         return 0
@@ -38,7 +38,7 @@ endfunction
 
 let s:gui_options_override = 0
 let s:gui_options_cache = ''
-function s:set_allow_gui(allow_gui)
+function! s:set_allow_gui(allow_gui) abort
     if !a:allow_gui
         if !s:gui_options_override
             let s:gui_options_cache=&guioptions
@@ -60,7 +60,7 @@ function s:set_allow_gui(allow_gui)
     endif
 endfunction
 
-function s:set_window_clean(is_clean)
+function! s:set_window_clean(is_clean) abort
     if a:is_clean
         call libcallnr(s:dll_path, 'set_window_style_clean', s:get_background_color())
     else
@@ -68,7 +68,7 @@ function s:set_window_clean(is_clean)
     endif
 endfunction
 
-function s:set_fullscreen(is_fullscreen)
+function! s:set_fullscreen(is_fullscreen) abort
     if a:is_fullscreen
         call libcallnr(s:dll_path, 'set_fullscreen_on', s:get_background_color())
     else
@@ -76,16 +76,19 @@ function s:set_fullscreen(is_fullscreen)
     endif
 endfunction
 
-function! wimproved#set_alpha(alpha)
+function! wimproved#set_alpha(alpha) abort
     call libcallnr(s:dll_path, 'set_alpha', str2nr(a:alpha))
 endfunction
 
-function! wimproved#set_monitor_center()
-    call libcallnr(s:dll_path, 'set_monitor_center', 0)
+function! wimproved#set_monitor_center(...) abort
+    if !s:fullscreen_on
+        let v = len(a:000) ? str2nr(a:1) : 0
+        call libcallnr(s:dll_path, 'set_monitor_center', v)
+    endif
 endfunction
 
 let s:clean_window_style_on = 0
-function! wimproved#toggle_clean()
+function! wimproved#toggle_clean() abort
     let s:clean_window_style_on = !s:clean_window_style_on
 
     " If we are fullscreen don't update our style, but remember it for later
@@ -98,7 +101,7 @@ function! wimproved#toggle_clean()
 endfunction
 
 let s:fullscreen_on = 0
-function! wimproved#toggle_fullscreen()
+function! wimproved#toggle_fullscreen() abort
     let s:fullscreen_on = !s:fullscreen_on
     call s:set_fullscreen(s:fullscreen_on)
 
