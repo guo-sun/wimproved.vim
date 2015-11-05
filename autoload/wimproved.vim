@@ -36,6 +36,22 @@ function! s:get_background_color()
     return str2nr(strpart(l:s, 1), 16) " Skip over the #
 endfunction
 
+function s:set_window_clean(is_clean)
+    if a:is_clean
+        call libcallnr(s:dll_path, 'set_window_style_clean', s:get_background_color())
+    else
+        call libcallnr(s:dll_path, 'set_window_style_default', s:get_background_color())
+    endif
+endfunction
+
+function s:set_fullscreen(is_fullscreen)
+    if a:is_fullscreen
+        call libcallnr(s:dll_path, 'set_fullscreen_on', s:get_background_color())
+    else
+        call libcallnr(s:dll_path, 'set_fullscreen_off', s:get_background_color())
+    endif
+endfunction
+
 function! wimproved#set_alpha(alpha)
     call libcallnr(s:dll_path, 'set_alpha', str2nr(a:alpha))
 endfunction
@@ -46,22 +62,25 @@ endfunction
 
 let s:clean_window_style_on = 0
 function! wimproved#toggle_clean()
-    if !s:clean_window_style_on
-        call libcallnr(s:dll_path, 'set_window_style_clean', s:get_background_color())
-    else
-        call libcallnr(s:dll_path, 'set_window_style_default', s:get_background_color())
-    endif
     let s:clean_window_style_on = !s:clean_window_style_on
+
+    " If we are fullscreen don't update our style, but remember it for later
+    if s:fullscreen_on
+        return
+    endif
+
+    call s:set_window_clean(s:clean_window_style_on)
 endfunction
 
 let s:fullscreen_on = 0
 function! wimproved#toggle_fullscreen()
-    if !s:fullscreen_on
-        call libcallnr(s:dll_path, 'set_fullscreen_on', s:get_background_color())
-    else
-        call libcallnr(s:dll_path, 'set_fullscreen_off', s:get_background_color())
-    endif
     let s:fullscreen_on = !s:fullscreen_on
+    call s:set_fullscreen(s:fullscreen_on)
+
+    " Changing fullscreen state clobbers window style so refresh clean state
+    if !s:fullscreen_on
+        call s:set_window_clean(s:clean_window_style_on)
+    endif
 endfunction
 
 autocmd ColorScheme * call libcallnr(s:dll_path, 'update_window_brush', s:get_background_color())
