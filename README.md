@@ -1,37 +1,39 @@
-# wimproved.vim
-A better Vim experience for Windows.
+## wimproved.vim
 
-Commands
------
-- `:WCenter`
-    - Center the window on the current monitor
-- `:WSetAlpha x`
-    - Set window alpha [0, 255]
-- `:WToggleClean`
-    - Toggle clean window style
-- `:WToggleFullscreen`
-    - Toggle fullscreen
+### Introduction
+An effort to create a better editing experience for Vim on Windows.<br>
+Supports fullscreen while taking care to fix visual glitches seen in
+other plugins.
+
+Put the following in your .vimrc and enjoy!
+
+    autocmd GUIEnter * WToggleClean
+
+### Commands
+`:WCenter {scale}`
+  - Centers the window on the current monitor.  If scale is non-zero, resizes<br>
+    the window as a percentage (scale / 100) of the current monitor size.
+
+`:WSetAlpha {alpha}`
+  - Sets the alpha of the window to the given value.
+
+`:WToggleFullscreen`
+  - Toggles full-screen support.
+
+`WToggleClean`
+  - Toggles between the default and 'clean' window styling.
 
 ### Installation
-#### Pathogen - https://github.com/tpope/vim-pathogen
+Install using your favorite plugin manager.  The plugin expects wimproved.dll to exist in the root plugin folder.
+If you have `cmake` and Visual Studio installed run the following:
 
-    git clone https://github.com/kkoenig/wimproved.vim ~/.vim/bundle/wimproved.vim
+```
+cmake -G "NMake Makefiles" . && nmake
+```
 
-#### vim-plug - https://github.com/junegunn/vim-plug
-Add the following to your `.vimrc` and run `:PlugInstall`
 
-    Plug 'kkoenig/wimproved.vim'
-
-#### Vundle - https://github.com/gmarik/Vundle.vim
-Add the following to your `.vimrc` and run `:PluginInstall`
-
-    Plugin 'kkoenig/wimproved.vim'
-
-#### NeoBundle - https://github.com/Shougo/neobundle.vim
-Add the following to your `.vimrc` and run `:NeoBundleInstall`
-
-    NeoBundle 'kkoenig/wimproved.vim'
-
+### Contributions
+Contributions and pull requests are welcome.
 
 ### License
 
