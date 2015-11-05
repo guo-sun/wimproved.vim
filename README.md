@@ -31,7 +31,6 @@ If you have `cmake` and Visual Studio installed run the following:
 cmake -G "NMake Makefiles" . && nmake
 ```
 
-
 ### Contributions
 Contributions and pull requests are welcome.
 
@@ -40,4 +39,8 @@ Contributions and pull requests are welcome.
 This software is licensed under the [MIT license](http://en.wikipedia.org/wiki/MIT_License).
 © 2015 Killian Koenig &lt;<killiankoenig@gmail.com>&gt;.
 
+------
+Like this plugin? Follow this repository on
+[GitHub](https://github.com/kkoenig/wimproved.vim) and vote for it on
+[vim.org](http://www.vim.org/scripts/script.php?script_id=5265).  
 
