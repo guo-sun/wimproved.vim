@@ -1,4 +1,4 @@
-## wimproved.vim
+## :sparkles: wimproved.vim
 
 ### Introduction
 An effort to create a better editing experience for Vim on Windows.<br>
@@ -20,7 +20,7 @@ Put the following in your .vimrc and enjoy!
 `:WToggleFullscreen`
   - Toggles full-screen support.
 
-`WToggleClean`
+`:WToggleClean`
   - Toggles between the default and 'clean' window styling.
 
 ### Installation
