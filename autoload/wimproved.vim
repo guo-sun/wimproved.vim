@@ -76,6 +76,12 @@ function! s:set_fullscreen(is_fullscreen) abort
     endif
 endfunction
 
+function! s:fix_window_brush_color() abort
+    if s:fullscreen_on || s:clean_window_style_on
+        call libcallnr(s:dll_path, 'update_window_brush', s:get_background_color())
+    endif
+endfunction
+
 function! wimproved#set_alpha(alpha) abort
     call libcallnr(s:dll_path, 'set_alpha', str2nr(a:alpha))
 endfunction
@@ -113,4 +119,4 @@ function! wimproved#toggle_fullscreen() abort
     call s:set_allow_gui(!s:fullscreen_on && !s:clean_window_style_on)
 endfunction
 
-autocmd ColorScheme * call libcallnr(s:dll_path, 'update_window_brush', s:get_background_color())
+autocmd ColorScheme * call s:fix_window_brush_color()
