@@ -51,7 +51,5 @@ Contributions and pull requests are welcome.
 ==============================================================================
 LICENSE                                                  *wimproved-license*
 
-MIT License.  Copyright © 2015 Killian Koenig <killiankoenig@gmail.com.
+MIT License.  Copyright © 2015 Killian Koenig <killiankoenig@gmail.com>.
 
-
- vim:tw=78:ts=8:ft=help:norl:
