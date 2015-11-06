@@ -57,7 +57,7 @@ static void display_error(const char* error, int line, const char* file)
 #define display_error(error, line, file)
 #endif
 
-static BOOL CALLBACK enum_windows_proc(_In_ HWND hwnd, _In_ LPARAM lparam)
+static BOOL CALLBACK enum_windows_proc(HWND hwnd, LPARAM lparam)
 {
     DWORD process;
     if (IsWindowVisible(hwnd) && GetWindowThreadProcessId(hwnd, &process) &&
@@ -70,7 +70,7 @@ static BOOL CALLBACK enum_windows_proc(_In_ HWND hwnd, _In_ LPARAM lparam)
     return TRUE;
 }
 
-static BOOL CALLBACK enum_child_windows_proc(_In_ HWND hwnd, _In_ LPARAM lparam)
+static BOOL CALLBACK enum_child_windows_proc(HWND hwnd, LPARAM lparam)
 {
     char class_name[MAX_PATH];
     if (!GetClassNameA(hwnd, class_name,
@@ -94,12 +94,12 @@ static HWND get_hwnd(void)
 static HWND get_textarea_hwnd(void)
 {
     HWND hwnd = get_hwnd();
+    HWND child = NULL;
     if (hwnd == NULL)
     {
         return NULL;
     }
 
-    HWND child = NULL;
     (void)EnumChildWindows(hwnd, &enum_child_windows_proc, (LPARAM)&child);
     return child;
 }
@@ -172,26 +172,28 @@ __declspec(dllexport) int update_window_brush(long arg);
 
 static int set_window_style(int is_clean_enabled, int arg)
 {
+    HWND child;
+    HWND parent;
+    RECT parent_cr;
+    RECT child_wr;
+    int w, h;
+    LONG left, top;
+
     EXPECT(update_window_brush(arg));
 
-    HWND child;
     EXPECT((child = get_textarea_hwnd()) != NULL);
 
-    HWND parent;
     EXPECT((parent = get_hwnd()) != NULL);
 
     EXPECT(adjust_exstyle_flags(child, WS_EX_CLIENTEDGE, is_clean_enabled));
     EXPECT(force_redraw(child));
 
-    RECT parent_cr;
     EXPECT(GetClientRect(parent, &parent_cr));
 
-    RECT child_wr;
     EXPECT(GetWindowRect(child, &child_wr));
 
-    int w = child_wr.right - child_wr.left;
-    int h = child_wr.bottom - child_wr.top;
-    LONG left, top;
+    w = child_wr.right - child_wr.left;
+    h = child_wr.bottom - child_wr.top;
     if (is_clean_enabled)
     {
         /* Center the text area window in the parent window client area */
@@ -232,17 +234,18 @@ static int set_fullscreen(int should_be_fullscreen, int color)
     if (should_be_fullscreen)
     {
         RECT window;
+        HMONITOR monitor;
+        MONITORINFO mi;
+        RECT r = mi.rcMonitor;
+
         EXPECT(GetWindowRect(parent, &window));
 
-        HMONITOR monitor;
         EXPECT((monitor = MonitorFromRect(&window, MONITOR_DEFAULTTONEAREST)) !=
                NULL);
 
-        MONITORINFO mi;
         mi.cbSize = sizeof(mi);
         EXPECT(GetMonitorInfo(monitor, &mi));
 
-        RECT r = mi.rcMonitor;
         EXPECT(SetWindowPos(parent, NULL, r.left, r.top, r.right - r.left,
                             r.bottom - r.top, SWP_NOZORDER | SWP_NOACTIVATE));
     }
@@ -257,10 +260,11 @@ error:
 
 __declspec(dllexport) int set_alpha(long arg)
 {
+    HWND hwnd;
+
     arg = min(arg, 0xFF);
     arg = max(arg, 0x00);
 
-    HWND hwnd;
     EXPECT((hwnd = get_hwnd()) != NULL);
 
     /* WS_EX_LAYERED must be set if there is any transparency */
@@ -275,29 +279,30 @@ error:
 
 __declspec(dllexport) int set_monitor_center(long arg)
 {
+    HWND hwnd;
+    RECT window;
+    HMONITOR monitor;
+    MONITORINFO mi;
+    int w, h;
+
     arg = min(arg, 100);
     arg = max(arg, 0);
 
-    HWND hwnd;
     EXPECT((hwnd = get_hwnd()) != NULL);
 
-    RECT window;
     EXPECT(GetWindowRect(hwnd, &window));
 
-    HMONITOR monitor;
     EXPECT((monitor = MonitorFromRect(&window, MONITOR_DEFAULTTONEAREST)) !=
            NULL);
 
-    MONITORINFO mi;
     mi.cbSize = sizeof(mi);
     EXPECT(GetMonitorInfo(monitor, &mi));
 
-    int w, h;
     if (arg != 0)
     {
         double scale = arg / 100.0;
-        w = scale * (mi.rcMonitor.right - mi.rcMonitor.left);
-        h = scale * (mi.rcMonitor.bottom - mi.rcMonitor.top);
+        w = (int)(scale * (mi.rcMonitor.right - mi.rcMonitor.left));
+        h = (int)(scale * (mi.rcMonitor.bottom - mi.rcMonitor.top));
     }
     else
     {
@@ -345,16 +350,16 @@ __declspec(dllexport) int update_window_brush(long arg)
 {
     /* TODO: Don't leak brush */
     HBRUSH brush;
+    HWND child;
+    HWND parent;
     COLORREF color = RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF);
     EXPECT((brush = CreateSolidBrush(color)) != NULL);
 
-    HWND child;
     EXPECT((child = get_textarea_hwnd()) != NULL);
 
     EXPECT(SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush) ||
            !GetLastError());
 
-    HWND parent;
     EXPECT((parent = get_hwnd()) != NULL);
     EXPECT(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush) ||
            !GetLastError());
