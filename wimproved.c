@@ -236,7 +236,7 @@ static int set_fullscreen(int should_be_fullscreen, int color)
         RECT window;
         HMONITOR monitor;
         MONITORINFO mi;
-        RECT r = mi.rcMonitor;
+        RECT r;
 
         EXPECT(GetWindowRect(parent, &window));
 
@@ -246,6 +246,7 @@ static int set_fullscreen(int should_be_fullscreen, int color)
         mi.cbSize = sizeof(mi);
         EXPECT(GetMonitorInfo(monitor, &mi));
 
+        r = mi.rcMonitor;
         EXPECT(SetWindowPos(parent, NULL, r.left, r.top, r.right - r.left,
                             r.bottom - r.top, SWP_NOZORDER | SWP_NOACTIVATE));
     }
