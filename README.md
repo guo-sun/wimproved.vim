@@ -7,7 +7,7 @@ other plugins.
 
 Put the following in your .vimrc and enjoy!
 
-    autocmd GUIEnter * WToggleClean
+    autocmd GUIEnter * silent! WToggleClean
 
 ### Commands
 `:WCenter {scale}`
