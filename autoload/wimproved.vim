@@ -25,7 +25,7 @@ else
     let g:loaded_wimproved = 1
 endif
 
-let s:dll_path = fnamemodify('../wimproved.dll', ':p')
+let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/../wimproved.dll'
 
 let s:repository = 'https://github.com/kkoenig/wimproved.vim'
 let s:unexpected_error = 'Please report @ ' . s:repository
