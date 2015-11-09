@@ -153,14 +153,18 @@ endfunction
 let s:fullscreen_on = 0
 function! wimproved#toggle_fullscreen() abort
     try
+        if !s:fullscreen_on
+            call s:set_allow_gui(0)
+        endif
+
         call s:set_fullscreen(!s:fullscreen_on)
 
         " Changing fullscreen state clobbers window style so refresh clean state
         if s:fullscreen_on
             call s:set_window_clean(s:clean_window_style_on)
+            call s:set_allow_gui(!s:clean_window_style_on)
         endif
 
-        call s:set_allow_gui(s:fullscreen_on && !s:clean_window_style_on)
         let s:fullscreen_on = !s:fullscreen_on
     catch /^Vim\%((\a\+)\)\=:E364/
         echom 'Could not locate ' . s:dll_path
