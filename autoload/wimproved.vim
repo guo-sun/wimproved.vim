@@ -34,7 +34,7 @@ let s:missing_dll_error = 'See ' . s:repository . ' for setup instructions'
 function! s:get_background_color() abort
     let l:s = synIDattr(hlID('Normal'), 'bg#')
     if !len(l:s)
-        return 0
+        return 0xFFFFFF
     endif
 
     return str2nr(strpart(l:s, 1), 16) " Skip over the #
