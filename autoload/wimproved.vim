@@ -25,7 +25,11 @@ else
     let g:loaded_wimproved = 1
 endif
 
-let s:dll_path = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/../wimproved.dll'
+let s:dll_path = fnamemodify('../wimproved.dll', ':p')
+
+let s:repository = 'https://github.com/kkoenig/wimproved.vim'
+let s:unexpected_error = 'Please report @ ' . s:respository
+let s:missing_dll_error = 'See ' . s:repository . ' for setup instructions'
 
 function! s:get_background_color() abort
     let l:s = synIDattr(hlID('Normal'), 'bg#')
@@ -77,46 +81,86 @@ function! s:set_fullscreen(is_fullscreen) abort
 endfunction
 
 function! s:fix_window_brush_color() abort
-    if s:fullscreen_on || s:clean_window_style_on
-        call libcallnr(s:dll_path, 'update_window_brush', s:get_background_color())
-    endif
+    try
+        if s:fullscreen_on || s:clean_window_style_on
+            call libcallnr(s:dll_path, 'update_window_brush', s:get_background_color())
+        endif
+    catch /^Vim\%((\a\+)\)\=:E364/
+        echom 'Could not locate ' . s:dll_path
+        echom s:missing_dll_error
+    catch
+        echom v:exception
+        echom s:unexpected_error
+    endtry
 endfunction
 
 function! wimproved#set_alpha(alpha) abort
-    call libcallnr(s:dll_path, 'set_alpha', str2nr(a:alpha))
+    try
+        call libcallnr(s:dll_path, 'set_alpha', str2nr(a:alpha))
+    catch /^Vim\%((\a\+)\)\=:E364/
+        echom 'Could not locate ' . s:dll_path
+        echom s:missing_dll_error
+    catch
+        echom v:exception
+        echom s:unexpected_error
+    endtry
 endfunction
 
 function! wimproved#set_monitor_center(...) abort
-    if !s:fullscreen_on
-        let v = len(a:000) ? str2nr(a:1) : 0
-        call libcallnr(s:dll_path, 'set_monitor_center', v)
-    endif
+    try
+        if !s:fullscreen_on
+            let v = len(a:000) ? str2nr(a:1) : 0
+            call libcallnr(s:dll_path, 'set_monitor_center', v)
+        endif
+    catch /^Vim\%((\a\+)\)\=:E364/
+        echom 'Could not locate ' . s:dll_path
+        echom s:missing_dll_error
+    catch
+        echom v:exception
+        echom s:unexpected_error
+    endtry
 endfunction
 
 let s:clean_window_style_on = 0
 function! wimproved#toggle_clean() abort
-    let s:clean_window_style_on = !s:clean_window_style_on
-
+    try
     " If we are fullscreen don't update our style, but remember it for later
-    if s:fullscreen_on
-        return
-    endif
+        if s:fullscreen_on
+            let s:clean_window_style_on = !s:clean_window_style_on
+            return
+        endif
 
-    call s:set_window_clean(s:clean_window_style_on)
-    call s:set_allow_gui(!s:fullscreen_on && !s:clean_window_style_on)
+        call s:set_window_clean(!s:clean_window_style_on)
+        call s:set_allow_gui(!s:fullscreen_on && s:clean_window_style_on)
+        let s:clean_window_style_on = !s:clean_window_style_on
+    catch /^Vim\%((\a\+)\)\=:E364/
+        echom 'Could not locate ' . s:dll_path
+        echom s:missing_dll_error
+    catch
+        echom v:exception
+        echom s:unexpected_error
+    endtry
 endfunction
 
 let s:fullscreen_on = 0
 function! wimproved#toggle_fullscreen() abort
-    let s:fullscreen_on = !s:fullscreen_on
-    call s:set_fullscreen(s:fullscreen_on)
+    try
+        call s:set_fullscreen(!s:fullscreen_on)
 
-    " Changing fullscreen state clobbers window style so refresh clean state
-    if !s:fullscreen_on
-        call s:set_window_clean(s:clean_window_style_on)
-    endif
+        " Changing fullscreen state clobbers window style so refresh clean state
+        if s:fullscreen_on
+            call s:set_window_clean(s:clean_window_style_on)
+        endif
 
-    call s:set_allow_gui(!s:fullscreen_on && !s:clean_window_style_on)
+        call s:set_allow_gui(s:fullscreen_on && !s:clean_window_style_on)
+        let s:fullscreen_on = !s:fullscreen_on
+    catch /^Vim\%((\a\+)\)\=:E364/
+        echom 'Could not locate ' . s:dll_path
+        echom s:missing_dll_error
+    catch
+        echom v:exception
+        echom s:unexpected_error
+    endtry
 endfunction
 
 autocmd ColorScheme * call s:fix_window_brush_color()
