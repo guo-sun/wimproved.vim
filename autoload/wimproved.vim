@@ -28,7 +28,7 @@ endif
 let s:dll_path = fnamemodify('../wimproved.dll', ':p')
 
 let s:repository = 'https://github.com/kkoenig/wimproved.vim'
-let s:unexpected_error = 'Please report @ ' . s:respository
+let s:unexpected_error = 'Please report @ ' . s:repository
 let s:missing_dll_error = 'See ' . s:repository . ' for setup instructions'
 
 function! s:get_background_color() abort
@@ -48,6 +48,7 @@ function! s:set_allow_gui(allow_gui) abort
             let s:gui_options_cache=&guioptions
 
             " Hide menu bar, tool bar, all scroll bars
+            set guioptions-=e
             set guioptions-=m
             set guioptions-=T
             set guioptions-=l
