@@ -65,19 +65,26 @@ function! s:set_allow_gui(allow_gui) abort
     endif
 endfunction
 
+let s:default_window_brush = -1
 function! s:set_window_clean(is_clean) abort
     if a:is_clean
-        call libcallnr(s:dll_path, 'set_window_style_clean', s:get_background_color())
+        let old_brush = libcallnr(s:dll_path, 'set_window_style_clean', s:get_background_color())
+        if s:default_window_brush != -1
+            let s:default_windoww_brush = old_brush
+        endif
     else
-        call libcallnr(s:dll_path, 'set_window_style_default', s:get_background_color())
+        call libcallnr(s:dll_path, 'set_window_style_default', s:default_window_brush)
     endif
 endfunction
 
 function! s:set_fullscreen(is_fullscreen) abort
     if a:is_fullscreen
-        call libcallnr(s:dll_path, 'set_fullscreen_on', s:get_background_color())
+        let old_brush = libcallnr(s:dll_path, 'set_fullscreen_on', s:get_background_color())
+        if s:default_window_brush != -1
+            let s:default_windoww_brush = old_brush
+        endif
     else
-        call libcallnr(s:dll_path, 'set_fullscreen_off', s:get_background_color())
+        call libcallnr(s:dll_path, 'set_fullscreen_off', s:default_window_brush)
     endif
 endfunction
 

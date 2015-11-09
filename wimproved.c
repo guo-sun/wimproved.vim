@@ -178,8 +178,9 @@ static int set_window_style(int is_clean_enabled, int arg)
     RECT child_wr;
     int w, h;
     LONG left, top;
+    int brush;
 
-    EXPECT(update_window_brush(arg));
+    EXPECT((brush = update_window_brush(arg)) != -1);
 
     EXPECT((child = get_textarea_hwnd()) != NULL);
 
@@ -215,7 +216,7 @@ static int set_window_style(int is_clean_enabled, int arg)
     EXPECT(SetWindowPos(child, NULL, left, top, w, h,
                         SWP_NOZORDER | SWP_NOACTIVATE));
 
-    return 1;
+    return brush;
 
 error:
     return 0;
@@ -224,6 +225,8 @@ error:
 static int set_fullscreen(int should_be_fullscreen, int color)
 {
     HWND parent;
+    int brush;
+
     EXPECT((parent = get_hwnd()) != NULL);
 
     adjust_style_flags(parent, WS_CAPTION | WS_THICKFRAME | WS_MAXIMIZEBOX |
@@ -251,9 +254,9 @@ static int set_fullscreen(int should_be_fullscreen, int color)
                             r.bottom - r.top, SWP_NOZORDER | SWP_NOACTIVATE));
     }
 
-    set_window_style(should_be_fullscreen, color);
+    brush = set_window_style(should_be_fullscreen, color);
 
-    return 1;
+    return brush;
 
 error:
     return 0;
@@ -354,6 +357,9 @@ __declspec(dllexport) int update_window_brush(long arg)
     HWND child;
     HWND parent;
     COLORREF color = RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF);
+    HBRUSH old_brush;
+    LOGBRUSH lb;
+
     EXPECT((brush = CreateSolidBrush(color)) != NULL);
 
     EXPECT((child = get_textarea_hwnd()) != NULL);
@@ -362,13 +368,15 @@ __declspec(dllexport) int update_window_brush(long arg)
            !GetLastError());
 
     EXPECT((parent = get_hwnd()) != NULL);
+    EXPECT((old_brush = (HBRUSH)GetClassLongPtr(parent, GCLP_HBRBACKGROUND)) != NULL);
+    EXPECT(GetObject(old_brush, sizeof(LOGBRUSH), &lb));
     EXPECT(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush) ||
            !GetLastError());
 
     EXPECT(RedrawWindow(parent, 0, 0, RDW_INVALIDATE));
     EXPECT(force_redraw(parent));
 
-    return 1;
+    return lb.lbColor;
 
 error:
     return 0;
