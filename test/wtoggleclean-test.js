@@ -88,19 +88,24 @@ describe(':WToggleClean', function() {
     var tests = [
         {
             desc: 'should work with the default theme',
-            ref: 'test/References/clean_default.png',
+            ref: 'clean_default.png',
             args: ['+WToggleClean']
         },
         {
             desc: 'should work with a dark theme',
-            ref: 'test/References/clean_dark.png',
+            ref: 'clean_dark.png',
             args: ['+"colorscheme desert"', '+WToggleClean']
+        },
+        {
+            desc: 'should update window brush when color scheme changes',
+            ref: 'clean_dark.png',
+            args: ['+WToggleClean', '+"colorscheme desert"']
         }
     ]
 
     tests.forEach(function(test, i) {
         it('@' + i + ' ' + test.desc, function(done) {
-            takeScreenshotAndCompare(outputDir, i, test.ref, test.args, done);
+            takeScreenshotAndCompare(outputDir, i, path.join('test', 'ref', test.ref), test.args, done);
         });
     });
 });
