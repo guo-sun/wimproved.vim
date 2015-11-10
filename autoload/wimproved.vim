@@ -138,8 +138,20 @@ function! wimproved#toggle_clean() abort
             return
         endif
 
+        " When switching to clean, we need to remove the gui and force a
+        " redraw before updating the window style to avoid visual glitches
+        if !s:clean_window_style_on
+            call s:set_allow_gui(0)
+        endif
+
         call s:set_window_clean(!s:clean_window_style_on)
-        call s:set_allow_gui(!s:fullscreen_on && s:clean_window_style_on)
+
+        " When switching to default, restore guioptions to its original state
+        " We can afford to let the redraw happen naturally
+        if s:clean_window_style_on
+            call s:set_allow_gui(1)
+        endif
+
         let s:clean_window_style_on = !s:clean_window_style_on
     catch /^Vim\%((\a\+)\)\=:E364/
         echom 'Could not locate ' . s:dll_path

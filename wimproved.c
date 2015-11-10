@@ -35,7 +35,7 @@ THE SOFTWARE.
         }                                                                      \
     } while ((void)0, 0)
 
-/* #define VERBOSE_ERRORS */
+#define VERBOSE_ERRORS
 #if defined(VERBOSE_ERRORS)
 static void display_error(const char* error, int line, const char* file)
 {
@@ -205,8 +205,11 @@ static int set_window_style(int is_clean_enabled, int arg)
          * area,
          * but we can center it and hide this by using the same background color
          * for both the parent and child window */
-        left += 2;
-        top += 2;
+        int offset = 2;
+        left += offset;
+        top += offset;
+        w -= offset;
+        h -= offset;
     }
     else
     {

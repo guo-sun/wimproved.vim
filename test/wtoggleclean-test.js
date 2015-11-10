@@ -9,7 +9,6 @@ resemble.outputSettings({
     transparency: 0.4
 });
 
-
 var pluginPath = path.resolve(__dirname, '../');
 function configure(args) {
     var options = [
@@ -18,6 +17,8 @@ function configure(args) {
         '-U', 'NORC', // Don't load .gvimrc
         // Disable swap files, set the runtime path to target this repository, disable the startup message
         '--cmd', '"set noswapfile | set rtp+=' + pluginPath + '" | set shortmess+=I',
+        // Disable cursor blink so there are no timing issues with screenshots
+        '+"set guicursor=n:blinkon0"',
         '+"set title"',
         '+"set titlestring=wimproved.vim"'];
     return options.concat(args);
@@ -80,6 +81,8 @@ function takeScreenshotAndCompare(outputDir, id, referenceImage, vimSettings, do
 }
 
 describe(':WToggleClean', function() {
+    this.timeout(5000);
+
     var uniqueId = crypto.randomBytes(6).toString('hex');
 
     var outputDir = path.join('test-output', uniqueId);
@@ -87,12 +90,12 @@ describe(':WToggleClean', function() {
 
     var tests = [
         {
-            desc: 'should work with the default theme',
+            desc: 'should look clean with the default theme',
             ref: 'clean_default.png',
             args: ['+WToggleClean']
         },
         {
-            desc: 'should work with a dark theme',
+            desc: 'should look clean with a dark theme',
             ref: 'clean_dark.png',
             args: ['+"colorscheme desert"', '+WToggleClean']
         },
@@ -100,6 +103,11 @@ describe(':WToggleClean', function() {
             desc: 'should update window brush when color scheme changes',
             ref: 'clean_dark.png',
             args: ['+WToggleClean', '+"colorscheme desert"']
+        },
+        {
+            desc: 'should look clean with guioptions already disabled',
+            ref: 'clean_dark_guioptions_off.png',
+            args: ['+"set guioptions="', '+"colorscheme desert"', '+WToggleClean']
         }
     ]
 
