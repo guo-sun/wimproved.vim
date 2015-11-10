@@ -1,12 +1,10 @@
 version: '{build}'
 os: unstable
 build_script:
-- cmd: >-
-    call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
-    .\make.cmd
+  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
+  - .\make.cmd
 test_script:
-- cmd: >-
-    npm test
+  - npm test
 artifacts:
 - path: '*.dll'
 - path: test-output\**\*.png
