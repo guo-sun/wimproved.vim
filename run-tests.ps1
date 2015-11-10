@@ -1,6 +1,10 @@
 function unzip($path) {
     Add-Type -assembly 'system.io.compression.filesystem'
+<<<<<<< HEAD
     [io.compression.zipfile]::ExtractToDirectory($path + '.zip', '.')
+=======
+    [io.compression.zipfile]::ExtractToDirectory($path + '.zip', $path)
+>>>>>>> 823ab137258b5cc949a313682017be32e79a441f
 }
 
 (npm install) | Out-Null
