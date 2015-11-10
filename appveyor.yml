@@ -1,5 +1,5 @@
 version: '{build}'
-os: Windows Server 2012 R2
+os: unstable
 build_script:
 - cmd: >-
     call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
