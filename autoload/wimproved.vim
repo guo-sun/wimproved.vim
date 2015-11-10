@@ -43,6 +43,8 @@ endfunction
 let s:gui_options_override = 0
 let s:gui_options_cache = ''
 function! s:set_allow_gui(allow_gui) abort
+    let l:columns = &columns
+    let l:lines = &lines
     if !a:allow_gui
         if !s:gui_options_override
             let s:gui_options_cache=&guioptions
@@ -63,6 +65,8 @@ function! s:set_allow_gui(allow_gui) abort
             let s:gui_options_override = 0
         endif
     endif
+    let &columns=l:columns
+    let &lines=l:lines
 endfunction
 
 let s:default_window_brush = -1

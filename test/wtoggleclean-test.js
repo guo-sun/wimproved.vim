@@ -16,7 +16,7 @@ function configure(args) {
         '-u', 'NORC', // Don't load .vimrc
         '-U', 'NORC', // Don't load .gvimrc
         // Disable swap files, set the runtime path to target this repository, disable the startup message
-        '--cmd', '"set noswapfile | set rtp+=' + pluginPath + '" | set shortmess+=I',
+        '--cmd', '"set noswapfile | set rtp+=' + pluginPath + ' | set shortmess+=I"',
         // Disable cursor blink so there are no timing issues with screenshots
         '+"set guicursor=n:blinkon0"',
         '+"set title"',
@@ -107,8 +107,18 @@ describe(':WToggleClean', function() {
         },
         {
             desc: 'should look clean with guioptions already disabled',
-            ref: 'clean_dark_guioptions_off.png',
-            args: ['+"set guioptions="', '+"colorscheme desert"', '+WToggleClean']
+            ref: 'clean_dark.png',
+            args: ['+"set guioptions="', '+"set columns=80"', '+"colorscheme desert"', '+WToggleClean']
+        },
+        {
+            desc: 'should restore default state with default color scheme',
+            ref: 'default.png',
+            args: ['+WToggleClean', '+WToggleClean']
+        },
+        {
+            desc: 'should restore default state with dark color scheme',
+            ref: 'default_dark.png',
+            args: ['+"colorscheme desert"', '+WToggleClean', '+WToggleClean']
         }
     ]
 
