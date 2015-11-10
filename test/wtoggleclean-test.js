@@ -122,12 +122,12 @@ describe(':WToggleClean', function() {
         {
             desc: 'should restore default state with default color scheme',
             ref: 'default.png',
-            args: ['+WToggleClean', '+WToggleClean']
+            args: ['+WToggleClean', '+redraw', '+WToggleClean']
         },
         {
             desc: 'should restore default state with dark color scheme',
             ref: 'default_dark.png',
-            args: ['+"colorscheme desert"', '+WToggleClean', '+WToggleClean']
+            args: ['+"colorscheme desert"', '+WToggleClean', '+redraw', '+WToggleClean']
         }
     ]
 
