@@ -1,6 +1,6 @@
 {
   "name": "wimproved.vim",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An effort to create a better editing experience for Vim on Windows.<br>\r Supports fullscreen while taking care to fix visual glitches seen in\r other plugins.",
   "dependencies": {
     "node-resemble-js": "^0.0.4"
