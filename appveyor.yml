@@ -2,7 +2,7 @@ version: '{build}'
 os: Windows Server 2012 R2
 build_script:
 - cmd: >-
-    call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
+    call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
     .\make.cmd
 test_script:
 - cmd: >-
