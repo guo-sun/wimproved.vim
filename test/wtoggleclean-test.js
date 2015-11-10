@@ -28,7 +28,7 @@ function launchVimAndTakeScreenshot(outputPath, options, complete) {
     var spawn = require('child_process').spawn;
     var process = spawn('gvim', options, { windowsVerbatimArguments: true });
     process.on('error', function(error) {
-        complete(error)
+        console.error(error)
     });
 
     process.on('close', function(code) {
@@ -86,6 +86,7 @@ describe(':WToggleClean', function() {
     var uniqueId = crypto.randomBytes(6).toString('hex');
 
     var outputDir = path.join('test-output', uniqueId);
+    fs.existsSync('test-output') || fs.mkdirSync('test-output');
     fs.existsSync(outputDir) || fs.mkdirSync(outputDir);
 
     var tests = [

@@ -32,6 +32,13 @@ If you have `cmake` and Visual Studio installed run the following:
 cmake -G "NMake Makefiles" . && nmake
 ```
 
+### Running tests 
+```shell
+npm install -g mocha
+npm install node-resemble-js
+mocha
+```
+
 ### Contributions
 Contributions and pull requests are welcome.
 
