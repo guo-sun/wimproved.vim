@@ -34,9 +34,8 @@ cmake -G "NMake Makefiles" . && nmake
 
 ### Running tests 
 ```shell
-npm install -g mocha
-npm install node-resemble-js
-mocha
+npm install
+npm test
 ```
 
 ### Contributions

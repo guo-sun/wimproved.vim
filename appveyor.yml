@@ -2,22 +2,11 @@ version: '{build}'
 os: Windows Server 2012 R2
 build_script:
 - cmd: >-
-    call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\vcvars32.bat"
-    cmake -G "NMake Makefiles" .
-    nmake
+    call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
+    .\make.cmd
 test_script:
-- ps: >-
-    iex 'appveyor DownloadFile http://files.kaoriya.net/vim/vim74-kaoriya-win32.zip -FileName vim.zip'
-    iex '(7z x vim.zip)' | Out-Null
-    iex 'dir vim74-kaoriya-win32'
-    [Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";$pwd\vim74-kaoriya-win32", [System.EnvironmentVariableTarget]::User)
-    $env:PATH = [Environment]::GetEnvironmentVariable("PATH",[System.EnvironmentVariableTarget]::User)
-
-    iex 'npm install mocha'
-    iex 'npm install node-resemble-js'
-    iex '.\node_modules\.bin\mocha'
-
-    iex 'dir test-output'
+- cmd: >-
+    npm test
 artifacts:
 - path: '*.dll'
 - path: test-output\**\*.png
