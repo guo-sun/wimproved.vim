@@ -143,16 +143,13 @@ function! wimproved#toggle_clean() abort
             return
         endif
 
-        " When switching to clean, we need to remove the gui and force a
-        " redraw before updating the window style to avoid visual glitches
+        " When switching to clean, remove the GUI first
         if !s:clean_window_style_on
             call s:set_allow_gui(0)
         endif
 
         call s:set_window_clean(!s:clean_window_style_on)
 
-        " When switching to default, restore guioptions to its original state
-        " We can afford to let the redraw happen naturally
         if s:clean_window_style_on
             call s:set_allow_gui(1)
         endif
@@ -168,18 +165,32 @@ function! wimproved#toggle_clean() abort
 endfunction
 
 let s:fullscreen_on = 0
+let s:fullscreen_cached_columns = 0
+let s:fullscreen_cached_rows = 0
+let s:fullscreen_cache = { 'cols': 0, 'lines': 0, 'x': 0, 'y': 0 }
 function! wimproved#toggle_fullscreen() abort
     try
         if !s:fullscreen_on
+            " Switching to fullscreen, so cache the size and diable the GUI
+            let s:fullscreen_cache.cols = &columns
+            let s:fullscreen_cache.lines = &lines
+            let s:fullscreen_cache.x = getwinposx()
+            let s:fullscreen_cache.y = getwinposy()
+
             call s:set_allow_gui(0)
         endif
 
         call s:set_fullscreen(!s:fullscreen_on)
 
-        " Changing fullscreen state clobbers window style so refresh clean state
         if s:fullscreen_on
+            " Changing fullscreen state clobbers window style so refresh window
             call s:set_window_clean(s:clean_window_style_on)
+            " Restore original gui options
             call s:set_allow_gui(!s:clean_window_style_on)
+            " Restore original window size
+            let &columns=s:fullscreen_cache.cols
+            let &lines=s:fullscreen_cache.lines
+            exec 'winpos' s:fullscreen_cache.x s:fullscreen_cache.y
         endif
 
         let s:fullscreen_on = !s:fullscreen_on

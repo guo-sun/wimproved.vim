@@ -138,3 +138,31 @@ describe(':WToggleClean', function() {
     });
 });
 
+describe(':WToggleFullscreen', function() {
+    this.timeout(5000);
+
+    var uniqueId = crypto.randomBytes(6).toString('hex');
+
+    var outputDir = path.join('test-output', uniqueId);
+    fs.existsSync('test-output') || fs.mkdirSync('test-output');
+    fs.existsSync(outputDir) || fs.mkdirSync(outputDir);
+
+    var tests = [
+        {
+            desc: 'should restore default state with default color scheme',
+            ref: 'default.png',
+            args: ['+WToggleFullscreen', '+redraw', '+WToggleFullscreen']
+        },
+        {
+            desc: 'should restore default state with dark color scheme',
+            ref: 'default_dark.png',
+            args: ['+"colorscheme desert"', '+WToggleFullscreen', '+redraw', '+WToggleFullscreen']
+        }
+    ]
+
+    tests.forEach(function(test, i) {
+        it('@' + i + ' ' + test.desc, function(done) {
+            takeScreenshotAndCompare(outputDir, i, path.join('test', 'ref', refType, test.ref), test.args, done);
+        });
+    });
+});

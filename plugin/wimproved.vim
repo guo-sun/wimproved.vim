@@ -29,7 +29,7 @@ function! s:show_wimproved_disabled()
     echo 'wimproved commands are only enabled in gVim on the Windows platform'
 endfunction
 
-if has('gui_running') && (has('win32') || has ('win64'))
+if has('gui_running') && has('win32')
     command! -nargs=? WCenter           call wimproved#set_monitor_center(<f-args>)
     command! -nargs=1 WSetAlpha         call wimproved#set_alpha(<f-args>)
     command! -nargs=0 WToggleClean      call wimproved#toggle_clean()
