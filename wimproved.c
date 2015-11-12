@@ -35,7 +35,7 @@ THE SOFTWARE.
         }                                                                      \
     } while ((void)0, 0)
 
-#define VERBOSE_ERRORS
+/* #define VERBOSE_ERRORS */
 #if defined(VERBOSE_ERRORS)
 static void display_error(const char* error, int line, const char* file)
 {
