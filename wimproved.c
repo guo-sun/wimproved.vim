@@ -113,7 +113,7 @@ static int force_redraw(HWND hwnd)
 
 static int adjust_exstyle_flags(HWND hwnd, long flags, int predicate)
 {
-    DWORD style = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+    DWORD style = (DWORD)GetWindowLongPtr(hwnd, GWL_EXSTYLE);
     EXPECT(style || !GetLastError());
 
     if (!predicate)
@@ -144,7 +144,7 @@ error:
 
 static int adjust_style_flags(HWND hwnd, long flags, int predicate)
 {
-    DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
+    DWORD style = (DWORD)GetWindowLongPtr(hwnd, GWL_STYLE);
     EXPECT(style || !GetLastError());
 
     if (!predicate)
@@ -209,10 +209,10 @@ static int set_window_style(int is_clean_enabled, int arg)
          * background color for the parent and child windows */
 
         /* Compute the delta between the clean/unclean child window rect */
-        style = GetWindowLongPtr(child, GWL_STYLE);
+        style = (DWORD)GetWindowLongPtr(child, GWL_STYLE);
         EXPECT(style || !GetLastError());
 
-        ex_style = GetWindowLongPtr(child, GWL_EXSTYLE);
+        ex_style = (DWORD)GetWindowLongPtr(child, GWL_EXSTYLE);
         EXPECT(ex_style || !GetLastError());
 
         unclean_child_wr = child_wr;
@@ -385,13 +385,13 @@ __declspec(dllexport) int update_window_brush(long arg)
 
     EXPECT((child = get_textarea_hwnd()) != NULL);
 
-    EXPECT(SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG)brush) ||
+    EXPECT(SetClassLongPtr(child, GCLP_HBRBACKGROUND, (LONG_PTR)brush) ||
            !GetLastError());
 
     EXPECT((parent = get_hwnd()) != NULL);
     EXPECT((old_brush = (HBRUSH)GetClassLongPtr(parent, GCLP_HBRBACKGROUND)) != NULL);
     EXPECT(GetObject(old_brush, sizeof(LOGBRUSH), &lb));
-    EXPECT(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG)brush) ||
+    EXPECT(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG_PTR)brush) ||
            !GetLastError());
 
     EXPECT(RedrawWindow(parent, 0, 0, RDW_INVALIDATE));
