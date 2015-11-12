@@ -1,4 +1,4 @@
-## :sparkles: wimproved.vim
+## :sparkles: wimproved.vim [![Build status](https://ci.appveyor.com/api/projects/status/8qn9sgwhmc4ppqx0/branch/master?svg=true)](https://ci.appveyor.com/project/kkoenig/wimproved-vim/branch/master)
 
 ### Introduction
 An effort to create a better editing experience for Vim on Windows.<br>
