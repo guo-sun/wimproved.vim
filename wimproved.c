@@ -197,19 +197,37 @@ static int set_window_style(int is_clean_enabled, int arg)
     h = child_wr.bottom - child_wr.top;
     if (is_clean_enabled)
     {
+        RECT unclean_child_wr;
+        DWORD style, ex_style, delta_x, delta_y;
+
         /* Center the text area window in the parent window client area */
         left = (parent_cr.right - parent_cr.left - w) / 2;
         top = (parent_cr.bottom - parent_cr.top - h) / 2;
 
         /* With WS_EX_CLIENTEDGE removed gVim will not fill the entire client
-         * area,
-         * but we can center it and hide this by using the same background color
-         * for both the parent and child window */
-        int offset = 2;
-        left += offset;
-        top += offset;
-        w -= offset;
-        h -= offset;
+         * area, but we can center it and hide this by using the same 
+         * background color for the parent and child windows */
+
+        /* Compute the delta between the clean/unclean child window rect */
+        style = GetWindowLongPtr(child, GWL_STYLE);
+        EXPECT(style || !GetLastError());
+
+        ex_style = GetWindowLongPtr(child, GWL_EXSTYLE);
+        EXPECT(ex_style || !GetLastError());
+
+        unclean_child_wr = child_wr;
+        EXPECT(AdjustWindowRectEx(&unclean_child_wr, style, FALSE, ex_style | WS_EX_CLIENTEDGE));
+
+        delta_x = ((unclean_child_wr.right - unclean_child_wr.left) - w) / 2;
+        delta_y = ((unclean_child_wr.bottom - unclean_child_wr.top) - h) / 2;
+
+        left += delta_x;
+        top += delta_y;
+
+        /* PrintWindow does not always clip the child correctly when it is
+         * larger than the parent */
+        w -= delta_x;
+        h -= delta_y;
     }
     else
     {
