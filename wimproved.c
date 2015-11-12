@@ -72,10 +72,9 @@ static BOOL CALLBACK enum_windows_proc(HWND hwnd, LPARAM lparam)
 
 static BOOL CALLBACK enum_child_windows_proc(HWND hwnd, LPARAM lparam)
 {
-    char class_name[MAX_PATH];
-    if (!GetClassNameA(hwnd, class_name,
-                       sizeof(class_name) / sizeof(class_name[0])) ||
-        strcmp(class_name, "VimTextArea"))
+    char name[MAX_PATH];
+    if (!GetClassNameA(hwnd, name, sizeof(name) / sizeof(name[0])) ||
+        strcmp(name, "VimTextArea"))
     {
         return TRUE;
     }
@@ -106,9 +105,8 @@ static HWND get_textarea_hwnd(void)
 
 static int force_redraw(HWND hwnd)
 {
-    return SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE |
-                                                    SWP_NOREPOSITION |
-                                                    SWP_NOSIZE);
+    DWORD flags = SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOREPOSITION | SWP_NOSIZE;
+    return SetWindowPos(hwnd, NULL, 0, 0, 0, 0, flags);
 }
 
 static int adjust_exstyle_flags(HWND hwnd, long flags, int predicate)
@@ -172,25 +170,20 @@ __declspec(dllexport) int update_window_brush(long arg);
 
 static int set_window_style(int is_clean_enabled, int arg)
 {
-    HWND child;
-    HWND parent;
-    RECT parent_cr;
-    RECT child_wr;
-    int w, h;
+    HWND child, parent;
+    RECT parent_cr, child_wr;
+    int w, h, brush;
     LONG left, top;
-    int brush;
 
     EXPECT((brush = update_window_brush(arg)) != -1);
 
     EXPECT((child = get_textarea_hwnd()) != NULL);
-
     EXPECT((parent = get_hwnd()) != NULL);
 
     EXPECT(adjust_exstyle_flags(child, WS_EX_CLIENTEDGE, is_clean_enabled));
     EXPECT(force_redraw(child));
 
     EXPECT(GetClientRect(parent, &parent_cr));
-
     EXPECT(GetWindowRect(child, &child_wr));
 
     w = child_wr.right - child_wr.left;
@@ -205,7 +198,7 @@ static int set_window_style(int is_clean_enabled, int arg)
         top = (parent_cr.bottom - parent_cr.top - h) / 2;
 
         /* With WS_EX_CLIENTEDGE removed gVim will not fill the entire client
-         * area, but we can center it and hide this by using the same 
+         * area, but we can center it and hide this by using the same
          * background color for the parent and child windows */
 
         /* Compute the delta between the clean/unclean child window rect */
@@ -213,10 +206,11 @@ static int set_window_style(int is_clean_enabled, int arg)
         EXPECT(style || !GetLastError());
 
         ex_style = (DWORD)GetWindowLongPtr(child, GWL_EXSTYLE);
-        EXPECT(ex_style || !GetLastError());
+        /* Work around win10 bug EXPECT(ex_style || !GetLastError()); */
 
         unclean_child_wr = child_wr;
-        EXPECT(AdjustWindowRectEx(&unclean_child_wr, style, FALSE, ex_style | WS_EX_CLIENTEDGE));
+        EXPECT(AdjustWindowRectEx(&unclean_child_wr, style, FALSE,
+                                  ex_style | WS_EX_CLIENTEDGE));
 
         delta_x = ((unclean_child_wr.right - unclean_child_wr.left) - w) / 2;
         delta_y = ((unclean_child_wr.bottom - unclean_child_wr.top) - h) / 2;
@@ -257,17 +251,14 @@ static int set_fullscreen(int should_be_fullscreen, int color)
 
     if (should_be_fullscreen)
     {
-        RECT window;
+        RECT window, r;
         HMONITOR monitor;
-        MONITORINFO mi;
-        RECT r;
+        MONITORINFO mi = {sizeof(mi)};
 
         EXPECT(GetWindowRect(parent, &window));
-
         EXPECT((monitor = MonitorFromRect(&window, MONITOR_DEFAULTTONEAREST)) !=
                NULL);
 
-        mi.cbSize = sizeof(mi);
         EXPECT(GetMonitorInfo(monitor, &mi));
 
         r = mi.rcMonitor;
@@ -305,44 +296,41 @@ error:
 __declspec(dllexport) int set_monitor_center(long arg)
 {
     HWND hwnd;
-    RECT window;
+    RECT wr;
     HMONITOR monitor;
-    MONITORINFO mi;
-    int w, h;
+    MONITORINFO mi = {sizeof(mi)};
+    int w, h, mw, mh;
 
     arg = min(arg, 100);
     arg = max(arg, 0);
 
     EXPECT((hwnd = get_hwnd()) != NULL);
 
-    EXPECT(GetWindowRect(hwnd, &window));
+    EXPECT(GetWindowRect(hwnd, &wr));
+    EXPECT((monitor = MonitorFromRect(&wr, MONITOR_DEFAULTTONEAREST)) != NULL);
 
-    EXPECT((monitor = MonitorFromRect(&window, MONITOR_DEFAULTTONEAREST)) !=
-           NULL);
-
-    mi.cbSize = sizeof(mi);
     EXPECT(GetMonitorInfo(monitor, &mi));
 
+    mw = mi.rcMonitor.right - mi.rcMonitor.left;
+    mh = mi.rcMonitor.bottom - mi.rcMonitor.top;
     if (arg != 0)
     {
         double scale = arg / 100.0;
-        w = (int)(scale * (mi.rcMonitor.right - mi.rcMonitor.left));
-        h = (int)(scale * (mi.rcMonitor.bottom - mi.rcMonitor.top));
+        w = (int)(scale * mw);
+        h = (int)(scale * mh);
     }
     else
     {
-        w = window.right - window.left;
-        h = window.bottom - window.top;
+        w = wr.right - wr.left;
+        h = wr.bottom - wr.top;
     }
 
-    window.left =
-        mi.rcMonitor.left + (mi.rcMonitor.right - mi.rcMonitor.left - w) / 2;
-    window.top =
-        mi.rcMonitor.top + (mi.rcMonitor.bottom - mi.rcMonitor.top - h) / 2;
-    window.right = window.left + w;
-    window.bottom = window.top + h;
+    wr.left = mi.rcMonitor.left + (mw - w) / 2;
+    wr.top = mi.rcMonitor.top + (mh - h) / 2;
+    wr.right = wr.left + w;
+    wr.bottom = wr.top + h;
 
-    EXPECT(SetWindowPos(hwnd, NULL, window.left, window.top, w, h,
+    EXPECT(SetWindowPos(hwnd, NULL, wr.left, wr.top, w, h,
                         SWP_NOZORDER | SWP_NOACTIVATE));
 
     return 1;
@@ -374,11 +362,9 @@ __declspec(dllexport) int set_window_style_default(long arg)
 __declspec(dllexport) int update_window_brush(long arg)
 {
     /* TODO: Don't leak brush */
-    HBRUSH brush;
-    HWND child;
-    HWND parent;
+    HWND child, parent;
     COLORREF color = RGB((arg >> 16) & 0xFF, (arg >> 8) & 0xFF, arg & 0xFF);
-    HBRUSH old_brush;
+    HBRUSH brush, old_brush;
     LOGBRUSH lb;
 
     EXPECT((brush = CreateSolidBrush(color)) != NULL);
@@ -389,7 +375,8 @@ __declspec(dllexport) int update_window_brush(long arg)
            !GetLastError());
 
     EXPECT((parent = get_hwnd()) != NULL);
-    EXPECT((old_brush = (HBRUSH)GetClassLongPtr(parent, GCLP_HBRBACKGROUND)) != NULL);
+    EXPECT((old_brush = (HBRUSH)GetClassLongPtr(parent, GCLP_HBRBACKGROUND)) !=
+           NULL);
     EXPECT(GetObject(old_brush, sizeof(LOGBRUSH), &lb));
     EXPECT(SetClassLongPtr(parent, GCLP_HBRBACKGROUND, (LONG_PTR)brush) ||
            !GetLastError());
