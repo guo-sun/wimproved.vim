@@ -226,8 +226,8 @@ static int set_window_style(int is_clean_enabled, int arg)
 
         /* PrintWindow does not always clip the child correctly when it is
          * larger than the parent */
-        w -= delta_x;
-        h -= delta_y;
+        w -= delta_x * 2;
+        h -= delta_y * 2;
     }
     else
     {
