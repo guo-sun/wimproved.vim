@@ -3,11 +3,15 @@ var crypto = require('crypto')
 var fs = require('fs')
 var path = require('path')
 var resemble = require('node-resemble-js')
+var execSync = require('child_process').execSync
 
 resemble.outputSettings({
     errorType: 'movement',
     transparency: 0.4
 });
+
+var productName = execSync('reg query "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" /v ProductName').toString();
+var refType = productName.indexOf('Server') != -1 ? 'server' : 'desktop';
 
 var pluginPath = path.resolve(__dirname, '../');
 function configure(args) {
@@ -129,7 +133,7 @@ describe(':WToggleClean', function() {
 
     tests.forEach(function(test, i) {
         it('@' + i + ' ' + test.desc, function(done) {
-            takeScreenshotAndCompare(outputDir, i, path.join('test', 'ref', test.ref), test.args, done);
+            takeScreenshotAndCompare(outputDir, i, path.join('test', 'ref', refType, test.ref), test.args, done);
         });
     });
 });
