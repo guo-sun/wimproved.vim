@@ -7,17 +7,17 @@ build_script:
     nmake
 test_script:
 - ps: >-
-    appveyor DownloadFile http://files.kaoriya.net/vim/vim74-kaoriya-win32.zip -FileName vim.zip
-    (7z x vim.zip) | Out-Null
-    dir vim74-kaoriya-win32
+    iex 'appveyor DownloadFile http://files.kaoriya.net/vim/vim74-kaoriya-win32.zip -FileName vim.zip'
+    iex '(7z x vim.zip)' | Out-Null
+    iex 'dir vim74-kaoriya-win32'
     [Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";$pwd\vim74-kaoriya-win32", [System.EnvironmentVariableTarget]::User)
     $env:PATH = [Environment]::GetEnvironmentVariable("PATH",[System.EnvironmentVariableTarget]::User)
 
-    npm install mocha
-    npm install node-resemble-js
-    .\node_modules\.bin\mocha
+    iex 'npm install mocha'
+    iex 'npm install node-resemble-js'
+    iex '.\node_modules\.bin\mocha'
 
-    dir test-output
+    iex 'dir test-output'
 artifacts:
 - path: '*.dll'
 - path: test-output\**\*.png
