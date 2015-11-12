@@ -51,6 +51,10 @@ function imageDiffName(dir, id) {
     return path.join(dir, id + '-diff.png');
 }
 
+function imageRefName(dir, id) {
+    return path.join(dir, id + '-ref.png');
+}
+
 function takeScreenshotAndCompare(outputDir, id, referenceImage, vimSettings, done) {
     var config = configure(vimSettings);
 
@@ -62,6 +66,7 @@ function takeScreenshotAndCompare(outputDir, id, referenceImage, vimSettings, do
 
         var screenshot = fs.readFileSync(filename);
         var reference = fs.readFileSync(referenceImage);
+        fs.writeFileSync(imageRefName(outputDir, id), reference);
         var api = resemble(screenshot).compareTo(reference).onComplete(function(data) {
 
             var stream = fs.createWriteStream(imageDiffName(outputDir, id));
