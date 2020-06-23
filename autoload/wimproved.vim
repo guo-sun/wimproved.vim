@@ -192,4 +192,12 @@ function! wimproved#toggle_fullscreen() abort
     endtry
 endfunction
 
+function! wimproved#set_window_pos(posSize)
+    " arg should be a dict eventually
+    " posSize is string of form xx-yy-XXX-YYY
+    " where xx and yy are [0, 100) scaled position from top-left
+    " XX and YY are (0, 100] scaled size percentage of screen
+    call libcallnr(s:dll_path, 'set_monitor_position', posSize)
+endfunction
+
 autocmd ColorScheme * call s:fix_window_brush_color()

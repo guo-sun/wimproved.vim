@@ -23,6 +23,7 @@ THE SOFTWARE.
 */
 #include "Windows.h"
 #include "stdio.h"
+#include "string.h"
 
 #define EXPECT(condition)                                                      \
     do                                                                         \
@@ -385,6 +386,70 @@ __declspec(dllexport) int update_window_brush(long arg)
     EXPECT(force_redraw(parent));
 
     return lb.lbColor;
+
+error:
+    return 0;
+}
+
+static float parse_chars_size_offset(char* str, int offset, int size)
+{
+    char slice[size];
+
+    strcpy(slice, str + offset, size)
+
+    return atoi(slice) / 100.0;
+}
+
+
+__declspec(dllexport) int set_window_position(char* positions)
+{
+    // Mostly copypasta from set_monitor_center
+    HWND hwnd;
+    RECT wr;
+    HMONITOR monitor;
+    MONITORINFO mi = {sizeof(mi)};
+    int mw, mh;
+
+    EXPECT((hwnd = get_hwnd()) != NULL);
+
+    EXPECT(GetWindowRect(hwnd, &wr));
+    EXPECT((monitor = MonitorFromRect(&wr, MONITOR_DEFAULTTONEAREST)) != NULL);
+
+    EXPECT(GetMonitorInfo(monitor, &mi));
+
+    mw = mi.rcMonitor.right - mi.rcMonitor.left;
+    mh = mi.rcMonitor.bottom - mi.rcMonitor.top;
+
+    // target, scaled [0.0 - 1.0]
+    float  tx, ty, tw, th;
+
+    // positions: xx-yy-XXX-YYY
+    //            01234567890
+    tx = parse_chars_size_offset(positions,
+            0, 2)
+    ty = parse_chars_size_offset(positions,
+            3, 2)
+    tw = parse_chars_size_offset(positions,
+            6, 3)
+    th = parse_chars_size_offset(positions,
+            10, 3)
+
+    int x, y, cx, cy;
+    x = (int)(tx * mw);
+    y = (int)(ty * mh);
+    cx = (int)(tw * mw);
+    cy = (int)(th * mh);
+
+    // TODO Do I need to set these on the window rect?
+    /* wr.left = mi.rcMonitor.left + (mw - w) / 2; */
+    /* wr.top = mi.rcMonitor.top + (mh - h) / 2; */
+    /* wr.right = wr.left + w; */
+    /* wr.bottom = wr.top + h; */
+
+    EXPECT(SetWindowPos(hwnd, NULL, x, y, cx, cy,
+                        SWP_NOZORDER | SWP_NOACTIVATE));
+
+    return 1;
 
 error:
     return 0;
