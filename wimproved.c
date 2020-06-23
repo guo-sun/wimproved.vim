@@ -36,7 +36,7 @@ THE SOFTWARE.
         }                                                                      \
     } while ((void)0, 0)
 
-/* #define VERBOSE_ERRORS */
+#define VERBOSE_ERRORS
 #if defined(VERBOSE_ERRORS)
 static void display_error(const char* error, int line, const char* file)
 {
@@ -57,6 +57,11 @@ static void display_error(const char* error, int line, const char* file)
 #else
 #define display_error(error, line, file)
 #endif
+
+static void display_message(const char* msg)
+{
+    MessageBoxA(NULL, msg, "wimproved.vim", MB_ICONEXCLAMATION);
+}
 
 static BOOL CALLBACK enum_windows_proc(HWND hwnd, LPARAM lparam)
 {
@@ -391,24 +396,45 @@ error:
     return 0;
 }
 
-static float parse_chars_size_offset(char* str, int offset, int size)
+static char* slice(const char* str, int offset, int size)
 {
-    char slice[size];
+    char* slice = (char*)malloc((size + 1) * sizeof(char));
+    char* ptr = slice;
 
-    strcpy(slice, str + offset, size)
+    for (int i = 0; i < size; i++) {
+        *ptr = str[i + offset];
+        ptr = ptr++;
+    }
 
-    return atoi(slice) / 100.0;
+    *ptr = '\0';
+
+    return slice;
 }
 
+static float parse_chars_size_offset(char* str, int offset, int size)
+{
+    const char* sliced = slice(str, offset, size);
+
+    float result = atoi(sliced) / (float)100.0;
+
+    free(sliced);
+
+    return result;
+}
 
 __declspec(dllexport) int set_window_position(char* positions)
 {
     // Mostly copypasta from set_monitor_center
+    char unused[MAX_PATH];
+    char* msgContent = &unused[0];
+
     HWND hwnd;
     RECT wr;
     HMONITOR monitor;
     MONITORINFO mi = {sizeof(mi)};
     int mw, mh;
+
+    EXPECT(strlen(positions) == (size_t)13);
 
     EXPECT((hwnd = get_hwnd()) != NULL);
 
@@ -421,34 +447,27 @@ __declspec(dllexport) int set_window_position(char* positions)
     mh = mi.rcMonitor.bottom - mi.rcMonitor.top;
 
     // target, scaled [0.0 - 1.0]
-    float  tx, ty, tw, th;
+    float tx, ty, tw, th;
 
     // positions: xx-yy-XXX-YYY
     //            01234567890
-    tx = parse_chars_size_offset(positions,
-            0, 2)
-    ty = parse_chars_size_offset(positions,
-            3, 2)
-    tw = parse_chars_size_offset(positions,
-            6, 3)
-    th = parse_chars_size_offset(positions,
-            10, 3)
+    tx = parse_chars_size_offset(positions, 0, 2); // 0 is valid
+    ty = parse_chars_size_offset(positions, 3, 2);
+
+    EXPECT(tw = parse_chars_size_offset(positions, 6, 3)); // 0 not valid
+    EXPECT(th = parse_chars_size_offset(positions, 10, 3));
 
     int x, y, cx, cy;
-    x = (int)(tx * mw);
+    x = (int)(tx * mw); // 0 valid, TODO 100 not valid
     y = (int)(ty * mh);
-    cx = (int)(tw * mw);
-    cy = (int)(th * mh);
+    EXPECT(cx = (int)(tw * mw));
+    EXPECT(cy = (int)(th * mh));
 
-    // TODO Do I need to set these on the window rect?
-    /* wr.left = mi.rcMonitor.left + (mw - w) / 2; */
-    /* wr.top = mi.rcMonitor.top + (mh - h) / 2; */
-    /* wr.right = wr.left + w; */
-    /* wr.bottom = wr.top + h; */
+    sprintf(msgContent, "x: %i, y: %i, cx: %i, cy: %i", x, y, cx, cy);
+    display_message(msgContent);
 
     EXPECT(SetWindowPos(hwnd, NULL, x, y, cx, cy,
                         SWP_NOZORDER | SWP_NOACTIVATE));
-
     return 1;
 
 error:
