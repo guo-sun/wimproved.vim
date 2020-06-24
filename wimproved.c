@@ -463,8 +463,10 @@ __declspec(dllexport) int set_window_position(char* positions)
     EXPECT(cx = (int)(tw * mw));
     EXPECT(cy = (int)(th * mh));
 
-    sprintf(msgContent, "x: %i, y: %i, cx: %i, cy: %i", x, y, cx, cy);
-    display_message(msgContent);
+    // Found -12582913L off interwebs: https://stackoverflow.com/questions/2014014/hide-title-bar-of-program-using-api
+    long style = GetWindowLong(hwnd, -16L);
+    style &= -12582913L;
+    SetWindowLong(hwnd, -16L, style);
 
     EXPECT(SetWindowPos(hwnd, NULL, x, y, cx, cy,
                         SWP_NOZORDER | SWP_NOACTIVATE));
