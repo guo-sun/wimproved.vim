@@ -174,12 +174,13 @@ error:
 
 __declspec(dllexport) int update_window_brush(long arg);
 
+
 static int set_window_style(int is_clean_enabled, int arg)
 {
     HWND child, parent;
     RECT parent_cr, child_wr;
     int w, h, brush;
-    LONG left, top;
+    float left, top;
 
     EXPECT((brush = update_window_brush(arg)) != -1);
 
@@ -197,11 +198,12 @@ static int set_window_style(int is_clean_enabled, int arg)
     if (is_clean_enabled)
     {
         RECT unclean_child_wr;
-        DWORD style, ex_style, delta_x, delta_y;
+        DWORD style, ex_style;
+        float delta_x, delta_y;
 
         /* Center the text area window in the parent window client area */
-        left = (parent_cr.right - parent_cr.left - w) / 2;
-        top = (parent_cr.bottom - parent_cr.top - h) / 2;
+        left = (float)(parent_cr.right - parent_cr.left - w) / 2;
+        top = (float)(parent_cr.bottom - parent_cr.top - h) / 2;
 
         /* With WS_EX_CLIENTEDGE removed gVim will not fill the entire client
          * area, but we can center it and hide this by using the same
@@ -218,16 +220,16 @@ static int set_window_style(int is_clean_enabled, int arg)
         EXPECT(AdjustWindowRectEx(&unclean_child_wr, style, FALSE,
                                   ex_style | WS_EX_CLIENTEDGE));
 
-        delta_x = ((unclean_child_wr.right - unclean_child_wr.left) - w) / 2;
-        delta_y = ((unclean_child_wr.bottom - unclean_child_wr.top) - h) / 2;
+        delta_x = (float)((unclean_child_wr.right - unclean_child_wr.left) - w) / 2;
+        delta_y = (float)((unclean_child_wr.bottom - unclean_child_wr.top) - h) / 2;
 
         left += delta_x;
         top += delta_y;
 
         /* PrintWindow does not always clip the child correctly when it is
          * larger than the parent */
-        w -= delta_x * 2;
-        h -= delta_y * 2;
+        w -= (long)delta_x * 2;
+        h -= (long)delta_y * 2;
     }
     else
     {
