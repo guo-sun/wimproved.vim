@@ -195,6 +195,7 @@ static int set_window_style(int is_clean_enabled, int arg)
 
     w = child_wr.right - child_wr.left;
     h = child_wr.bottom - child_wr.top;
+
     if (is_clean_enabled)
     {
         RECT unclean_child_wr;
@@ -228,8 +229,14 @@ static int set_window_style(int is_clean_enabled, int arg)
 
         /* PrintWindow does not always clip the child correctly when it is
          * larger than the parent */
-        w -= (long)delta_x * 2;
-        h -= (long)delta_y * 2;
+
+        // NOTE
+        // This is causing the vim area (child) of the window (parent) to get
+        // smaller and smaller every clean/toggle
+        // The trade off is that with clean off, the vim area isn't the correct size
+        
+        /* w -= (long)delta_x * 2; */
+        /* h -= (long)delta_y * 2; */
     }
     else
     {
